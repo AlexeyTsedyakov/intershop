@@ -5,9 +5,6 @@ databaseChangeLog:
       file: db/changelog/changes/002-create-orders.yml
   - include:
       file: db/changelog/changes/003-create-order-items.yml
-  - include:
-      file: db/changelog/changes/004-create-carts.yml
-  - include:
-      file: db/changelog/changes/005-create-cart-items.yml
+
   - include:
       file: db/changelog/data/001-init-items.yml

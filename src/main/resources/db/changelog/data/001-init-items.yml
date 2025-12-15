@@ -20,3 +20,6 @@ databaseChangeLog:
               - column:
                   name: image
                   type: varchar
+      rollback:
+        - delete:
+            tableName: items

@@ -1,18 +1,37 @@
 package org.example.intershop.model;
 
-import jakarta.persistence.*;
-import lombok.Data;
+import org.springframework.stereotype.Component;
+import org.springframework.web.context.annotation.SessionScope;
 
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
-@Data
-@Entity
-@Table(name = "carts")
+@Component
+@SessionScope
 public class Cart {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private final Map<Long, Integer> quantitiesByItemId = new HashMap<>();
 
-    @OneToMany(mappedBy = "cart", cascade = CascadeType.ALL, orphanRemoval = true)
-    List<CartItem> items;
+    public Map<Long, Integer> getSnapshot() {
+        return quantitiesByItemId;
+    }
+
+    public int getQuantity(Long itemId) {
+        return quantitiesByItemId.getOrDefault(itemId, 0);
+    }
+
+    public void increaseQuantity(Long itemId) {
+        quantitiesByItemId.merge(itemId, 1, (Integer::sum));
+    }
+
+    public void decreaseQuantity(Long itemId) {
+        quantitiesByItemId.computeIfPresent(itemId, (id, qty) -> qty <= 1 ? null : qty - 1);
+    }
+
+    public void removeItem(Long itemId) {
+        quantitiesByItemId.remove(itemId);
+    }
+
+    public void clearCart() {
+        quantitiesByItemId.clear();
+    }
 }

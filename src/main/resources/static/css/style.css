@@ -30,3 +30,22 @@
 .page-sizes-buttons button.active {
     font-weight: bold;
 }
+
+.submit-button {
+    margin-top: 10px;
+    margin-bottom: 20px;
+}
+
+.cart-actions {
+    display: flex;
+    gap: 5px;
+    align-items: center;
+}
+
+.cart-button {
+    width: 20px;
+}
+
+.pagination-selector {
+    margin-top: 20px;
+}

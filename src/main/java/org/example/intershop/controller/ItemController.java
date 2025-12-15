@@ -1,6 +1,7 @@
 package org.example.intershop.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.example.intershop.model.Cart;
 import org.example.intershop.model.Item;
 import org.example.intershop.repository.specification.ItemSpecification;
 import org.example.intershop.service.ItemService;
@@ -21,6 +22,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 @RequestMapping("/items")
 public class ItemController {
     private final ItemService itemService;
+    private final Cart cart;
 
     @GetMapping
     public String showItems(Model model,
@@ -38,6 +40,7 @@ public class ItemController {
         model.addAttribute("size", size);
         model.addAttribute("sort", sort);
         model.addAttribute("search", search);
+        model.addAttribute("cart", cart);
 
         return "items";
     }

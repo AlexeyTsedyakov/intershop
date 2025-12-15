@@ -5,6 +5,7 @@
     <title>Витрина товаров</title>
     <link rel="stylesheet" th:href="@{/css/style.css}">
 </head>
+
 <body>
 <header>
     <h1>Витрина товаров</h1>
@@ -43,8 +44,7 @@
             </select>
         </fieldset>
 
-        <br>
-        <button type="submit">Применить</button>
+        <button type="submit" class="submit-button">Применить</button>
     </form>
 
     <section class="items-container">
@@ -52,8 +52,16 @@
             <img th:src="@{/img/{filename}(filename=${item.image})}" th:alt="${item.name}" width="300" height="300">
             <h2 th:text="${item.name}">Название товара</h2>
             <p th:text="${item.description}">Описание</p>
-            <span class="price" th:text="${item.price}">Цена</span>
-            <button>В корзину</button>
+            <p class="price" th:text="'Цена: ' + ${item.price}">Цена</p>
+            <div class="cart-actions">
+                <form method="post" th:action="@{/cart/{id}/increase (id=${item.id})}">
+                    <button type="submit" class="cart-button">+</button>
+                </form>
+                <span th:text="${cart.getQuantity(item.id)}"></span>
+                <form method="post" th:action="@{/cart/{id}/decrease (id=${item.id})}">
+                    <button type="submit" class="cart-button">-</button>
+                </form>
+            </div>
         </article>
     </section>
 

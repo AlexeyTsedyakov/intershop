@@ -55,21 +55,24 @@ dependencies {
 
     liquibaseRuntime("info.picocli:picocli:4.7.5")
 
-    tasks.withType<Test> {
-        useJUnitPlatform()
-    }
+}
 
-    liquibase {
-        activities.register("main") {
-            this.arguments = mapOf(
-                "changelogFile" to "db/changelog/db.changelog-master.yml",
-                "searchPath" to "src/main/resources",
-                "url" to "jdbc:postgresql://localhost:5432/intershop",
-                "username" to "postgres",
-                "password" to "postgres",
-                "count" to 6
-            )
-        }
-        runList = "main"
+tasks.withType<Test> {
+    useJUnitPlatform()
+}
+
+liquibase {
+    activities.register("main") {
+        this.arguments = mapOf(
+            "changelogFile" to "db/changelog/db.changelog-master.yml",
+            "searchPath" to "src/main/resources",
+            "url" to "jdbc:postgresql://localhost:5432/intershop",
+            "username" to "postgres",
+            "password" to "postgres",
+            "count" to 6
+        )
     }
+    runList = "main"
+
+// ./gradlew.bat rollbackCount
 }
