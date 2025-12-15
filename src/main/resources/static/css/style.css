@@ -1,0 +1,32 @@
+.items-container {
+    display: grid;
+    grid-template-columns: repeat(3, 300px);
+    gap: 20px;
+}
+
+.item-card img {
+    object-fit: contain;
+    display: block;
+}
+
+.pagination-selector, .page-size-selector {
+    display: flex;
+    gap: 5px;
+    margin-top: 10px;
+}
+
+.pagination-refs, .page-sizes-buttons {
+    display: flex;
+    gap: 5px;
+    padding: 0;
+    margin: 0;
+    list-style: none;
+}
+
+.pagination-refs li.active a {
+    font-weight: bold;
+}
+
+.page-sizes-buttons button.active {
+    font-weight: bold;
+}
