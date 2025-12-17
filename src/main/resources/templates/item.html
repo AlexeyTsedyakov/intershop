@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Карточка товара</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+
+<body>
+<header class="main-header">
+    <h1 th:text="${item.name}">Название товара</h1>
+    <nav class="main-navigation">
+        <ul>
+            <li><a th:href="@{/items}">Все товары</a></li>
+            <li><a th:href="@{/cart}">Корзина</a></li>
+        </ul>
+    </nav>
+</header>
+
+<main>
+    <article class="item-card">
+        <img th:src="@{/img/{filename}(filename=${item.image})}" th:alt="${item.name}" width="300" height="300">
+        <p th:text="${item.description}">Описание</p>
+        <p class="price" th:text="'Цена: ' + ${item.price}">Цена</p>
+        <div class="cart-actions">
+            <form method="post" th:action="@{/cart/{id}/increase (id=${item.id})}">
+                <button type="submit" class="cart-button">+</button>
+            </form>
+            <span th:text="${cart.getQuantity(item.id)}"></span>
+            <form method="post" th:action="@{/cart/{id}/decrease (id=${item.id})}">
+                <button type="submit" class="cart-button">-</button>
+            </form>
+            <form th:if="${cart.getQuantity(item.id) > 0}"
+                  method="post" th:action="@{/cart/{id}/remove (id=${item.id})}">
+                <button type="submit">Удалить из корзины</button>
+            </form>
+        </div>
+    </article>
+</main>
+</body>
+</html>

@@ -7,8 +7,14 @@
 </head>
 
 <body>
-<header>
+<header class="main-header">
     <h1>Витрина товаров</h1>
+    <nav class="main-navigation">
+        <ul>
+            <li><a th:href="@{/items}">Все товары</a></li>
+            <li><a th:href="@{/cart}">Корзина</a></li>
+        </ul>
+    </nav>
 </header>
 
 <main>
@@ -50,7 +56,9 @@
     <section class="items-container">
         <article class="item-card" th:each="item : ${items}">
             <img th:src="@{/img/{filename}(filename=${item.image})}" th:alt="${item.name}" width="300" height="300">
-            <h2 th:text="${item.name}">Название товара</h2>
+            <a th:href="@{/items/{id} (id=${item.id})}">
+                <h2 th:text="${item.name}">Название товара</h2>
+            </a>
             <p th:text="${item.description}">Описание</p>
             <p class="price" th:text="'Цена: ' + ${item.price}">Цена</p>
             <div class="cart-actions">
@@ -65,27 +73,25 @@
         </article>
     </section>
 
-    <nav>
-        <div class="pagination-selector">
-            <label>Страница: </label>
-            <ul class="pagination-refs">
-                <li th:if="${currentPage > 0}">
-                    <a th:href="@{/items(page=${currentPage - 1}, size=${size}, sort=${sort}, search=${search})}">&laquo;</a>
-                </li>
+    <div class="pagination-selector">
+        <label>Страница: </label>
+        <ul class="pagination-refs">
+            <li th:if="${currentPage > 0}">
+                <a th:href="@{/items(page=${currentPage - 1}, size=${size}, sort=${sort}, search=${search})}">&laquo;</a>
+            </li>
 
-                <li th:each="i : ${#numbers.sequence(0, totalPages - 1)}"
-                    th:if="${i >= currentPage - 2 && i <= currentPage + 2}"
-                    th:classappend="${i == currentPage} ? 'active' : ''">
-                    <a th:href="@{/items(page=${i}, size=${size}, sort=${sort}, search=${search})}"
-                       th:text="${i + 1}"></a>
-                </li>
+            <li th:each="i : ${#numbers.sequence(0, totalPages - 1)}"
+                th:if="${i >= currentPage - 2 && i <= currentPage + 2}"
+                th:classappend="${i == currentPage} ? 'active' : ''">
+                <a th:href="@{/items(page=${i}, size=${size}, sort=${sort}, search=${search})}"
+                   th:text="${i + 1}"></a>
+            </li>
 
-                <li th:if="${currentPage < totalPages - 1}">
-                    <a th:href="@{/items(page=${currentPage + 1}, size=${size}, sort=${sort}, search=${search})}">&raquo;</a>
-                </li>
-            </ul>
-        </div>
-    </nav>
+            <li th:if="${currentPage < totalPages - 1}">
+                <a th:href="@{/items(page=${currentPage + 1}, size=${size}, sort=${sort}, search=${search})}">&raquo;</a>
+            </li>
+        </ul>
+    </div>
 </main>
 </body>
 </html>

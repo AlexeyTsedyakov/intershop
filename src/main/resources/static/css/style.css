@@ -49,3 +49,15 @@
 .pagination-selector {
     margin-top: 20px;
 }
+
+.main-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.main-navigation ul {
+    padding: 0;
+    margin: 0;
+    list-style: none;
+}

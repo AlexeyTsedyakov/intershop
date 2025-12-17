@@ -14,6 +14,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
@@ -43,6 +44,16 @@ public class ItemController {
         model.addAttribute("cart", cart);
 
         return "items";
+    }
+
+    @GetMapping("/{id}")
+    public String showItem(Model model, @PathVariable Long id) {
+        Item item = itemService.findById(id);
+
+        model.addAttribute("item", item);
+        model.addAttribute("cart", cart);
+
+        return "item";
     }
 
     private Sort parseSort(String sort) {
