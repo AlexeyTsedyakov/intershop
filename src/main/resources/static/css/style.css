@@ -61,3 +61,7 @@
     margin: 0;
     list-style: none;
 }
+
+.checkout-panel {
+    margin-top: 30px;
+}

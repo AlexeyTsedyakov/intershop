@@ -7,6 +7,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public interface ItemService {
     Item findById(long id);
@@ -14,4 +16,6 @@ public interface ItemService {
     List<Item> findAll();
 
     Page<@NonNull Item> findAll(Specification<Item> spec, Pageable pageable);
+
+    Map<Long, Item> findAllByIds(Set<Long> ids);
 }

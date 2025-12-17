@@ -11,8 +11,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.NoSuchElementException;
+import java.util.*;
 
 @RequiredArgsConstructor
 @Service
@@ -35,5 +34,14 @@ public class ItemServiceImpl implements ItemService {
     @Transactional(readOnly = true)
     public Page<@NonNull Item> findAll(Specification<Item> spec, Pageable pageable) {
         return itemRepository.findAll(spec, pageable);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Map<Long, Item> findAllByIds(Set<Long> ids) {
+        Map<Long, Item> itemsById = new HashMap<>();
+        itemRepository.findAllByIdIn(ids).forEach(item -> itemsById.put(item.getId(), item));
+
+        return itemsById;
     }
 }

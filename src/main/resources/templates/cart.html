@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Корзина</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+
+<body>
+<header class="main-header">
+    <h1>Корзина</h1>
+    <nav class="main-navigation">
+        <ul>
+            <li><a th:href="@{/items}">Все товары</a></li>
+            <li><a th:href="@{/cart}">Корзина</a></li>
+        </ul>
+    </nav>
+</header>
+
+<main>
+    <section class="items-container">
+        <article class="item-card" th:each="cartItem : ${cart.getSnapshot().values()}">
+            <img th:src="@{/img/{filename}(filename=${cartItem.item.image})}" th:alt="${cartItem.item.name}"
+                 width="300" height="300">
+            <a th:href="@{/items/{id} (id=${cartItem.itemId})}">
+                <h2 th:text="${cartItem.item.name}">Название товара</h2>
+            </a>
+            <p class="price" th:text="'Цена: ' + ${cartItem.item.price}">Цена</p>
+            <div class="cart-actions">
+                <form method="post" th:action="@{/cart/increase/{id} (id=${cartItem.itemId})}">
+                    <button type="submit" class="cart-button">+</button>
+                </form>
+                <span th:text="${cart.getQuantity(cartItem.itemId)}"></span>
+                <form method="post" th:action="@{/cart/decrease/{id} (id=${cartItem.itemId})}">
+                    <button type="submit" class="cart-button">-</button>
+                </form>
+                <form th:if="${cart.getQuantity(cartItem.itemId) > 0}"
+                      method="post" th:action="@{/cart/remove/{id} (id=${cartItem.itemId})}">
+                    <button type="submit">Удалить из корзины</button>
+                </form>
+            </div>
+        </article>
+    </section>
+
+    <div class="checkout-panel">
+        <p th:text="'Итого: ' + ${totalAmount} + ' рублей'"></p>
+        <form th:if="${totalAmount > 0}" method="post" th:action="@{/order}">
+            <button type="submit">Заказать</button>
+        </form>
+    </div>
+</main>
+</body>

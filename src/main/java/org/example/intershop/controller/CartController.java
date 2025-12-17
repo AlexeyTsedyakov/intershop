@@ -2,8 +2,10 @@ package org.example.intershop.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.example.intershop.model.Cart;
+import org.example.intershop.service.CartService;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 @RequiredArgsConstructor
@@ -11,20 +13,32 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/cart")
 public class CartController {
     private final Cart cart;
+    private final CartService cartService;
 
-    @PostMapping("/{id}/increase")
+    @GetMapping
+    public String showCart(Model model) {
+        cartService.fetchItems(cart);
+        long totalAmount = cartService.getTotalAmount(cart);
+
+        model.addAttribute("cart", cart);
+        model.addAttribute("totalAmount", totalAmount);
+
+        return "cart";
+    }
+
+    @PostMapping("/increase/{id}")
     public String add(@PathVariable Long id, @RequestHeader(value = HttpHeaders.REFERER) String referer) {
         cart.increaseQuantity(id);
         return redirectToReferer(referer);
     }
 
-    @PostMapping("/{id}/decrease")
+    @PostMapping("/decrease/{id}")
     public String remove(@PathVariable Long id, @RequestHeader(value = HttpHeaders.REFERER) String referer) {
         cart.decreaseQuantity(id);
         return redirectToReferer(referer);
     }
 
-    @PostMapping("/{id}/remove")
+    @PostMapping("/remove/{id}")
     public String delete(@PathVariable Long id, @RequestHeader(value = HttpHeaders.REFERER) String referer) {
         cart.removeItem(id);
         return redirectToReferer(referer);

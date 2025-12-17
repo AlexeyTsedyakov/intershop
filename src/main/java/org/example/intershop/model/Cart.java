@@ -3,35 +3,41 @@ package org.example.intershop.model;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.annotation.SessionScope;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 @Component
 @SessionScope
 public class Cart {
-    private final Map<Long, Integer> quantitiesByItemId = new HashMap<>();
+    private final Map<Long, CartItem> cartItemByItemId = new LinkedHashMap<>();
 
-    public Map<Long, Integer> getSnapshot() {
-        return quantitiesByItemId;
+    public Map<Long, CartItem> getSnapshot() {
+        return Map.copyOf(cartItemByItemId);
     }
 
     public int getQuantity(Long itemId) {
-        return quantitiesByItemId.getOrDefault(itemId, 0);
+        CartItem cartItem = cartItemByItemId.get(itemId);
+        return cartItem == null ? 0 : cartItem.getQuantity();
     }
 
     public void increaseQuantity(Long itemId) {
-        quantitiesByItemId.merge(itemId, 1, (Integer::sum));
+        CartItem cartItem = cartItemByItemId.computeIfAbsent(itemId, (id) -> new CartItem(id, 0));
+        cartItem.setQuantity(cartItem.getQuantity() + 1);
     }
 
     public void decreaseQuantity(Long itemId) {
-        quantitiesByItemId.computeIfPresent(itemId, (id, qty) -> qty <= 1 ? null : qty - 1);
+        CartItem cartItem = cartItemByItemId.computeIfPresent(itemId,
+                (id, item) -> item.getQuantity() <= 1 ? null : item);
+        if (cartItem != null) {
+            cartItem.setQuantity(cartItem.getQuantity() - 1);
+        }
     }
 
     public void removeItem(Long itemId) {
-        quantitiesByItemId.remove(itemId);
+        cartItemByItemId.remove(itemId);
     }
 
     public void clearCart() {
-        quantitiesByItemId.clear();
+        cartItemByItemId.clear();
     }
 }
