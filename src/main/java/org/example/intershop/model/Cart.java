@@ -3,41 +3,56 @@ package org.example.intershop.model;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.annotation.SessionScope;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
 @Component
 @SessionScope
 public class Cart {
-    private final Map<Long, CartItem> cartItemByItemId = new LinkedHashMap<>();
+    private final List<CartItem> cartItems = new ArrayList<>();
 
-    public Map<Long, CartItem> getSnapshot() {
-        return Map.copyOf(cartItemByItemId);
+    public List<CartItem> getSnapshot() {
+        return List.copyOf(cartItems);
     }
 
     public int getQuantity(Long itemId) {
-        CartItem cartItem = cartItemByItemId.get(itemId);
-        return cartItem == null ? 0 : cartItem.getQuantity();
+        Optional<CartItem> cartItem = findCartItem(itemId);
+        return cartItem.map(CartItem::getQuantity).orElse(0);
     }
 
     public void increaseQuantity(Long itemId) {
-        CartItem cartItem = cartItemByItemId.computeIfAbsent(itemId, (id) -> new CartItem(id, 0));
+        CartItem cartItem = findCartItem(itemId).orElseGet(() -> {
+            var newItem = new CartItem(itemId, 0);
+            cartItems.add(newItem);
+            return newItem;
+        });
+
         cartItem.setQuantity(cartItem.getQuantity() + 1);
     }
 
     public void decreaseQuantity(Long itemId) {
-        CartItem cartItem = cartItemByItemId.computeIfPresent(itemId,
-                (id, item) -> item.getQuantity() <= 1 ? null : item);
-        if (cartItem != null) {
-            cartItem.setQuantity(cartItem.getQuantity() - 1);
-        }
+        findCartItem(itemId).ifPresent(cartItem -> {
+            int quantity = cartItem.getQuantity();
+            if (quantity <= 1) {
+                cartItems.remove(cartItem);
+            } else {
+                cartItem.setQuantity(quantity - 1);
+            }
+        });
     }
 
     public void removeItem(Long itemId) {
-        cartItemByItemId.remove(itemId);
+        cartItems.removeIf(item -> itemId.equals(item.getItemId()));
     }
 
     public void clearCart() {
-        cartItemByItemId.clear();
+        cartItems.clear();
+    }
+
+    private Optional<CartItem> findCartItem(Long itemId) {
+        return cartItems.stream()
+                .filter(item -> itemId.equals(item.getItemId()))
+                .findFirst();
     }
 }

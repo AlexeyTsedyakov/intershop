@@ -12,6 +12,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Service
@@ -38,10 +40,14 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     @Transactional(readOnly = true)
-    public Map<Long, Item> findAllByIds(Set<Long> ids) {
-        Map<Long, Item> itemsById = new HashMap<>();
-        itemRepository.findAllByIdIn(ids).forEach(item -> itemsById.put(item.getId(), item));
+    public List<Item> findAllByIds(Collection<Long> ids) {
+        return itemRepository.findAllById(ids);
+    }
 
-        return itemsById;
+    @Override
+    @Transactional(readOnly = true)
+    public Map<Long, Item> findAllByIdsAsMap(Collection<Long> ids) {
+        return findAllByIds(ids).stream()
+                .collect(Collectors.toMap(Item::getId, Function.identity()));
     }
 }

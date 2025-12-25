@@ -19,7 +19,7 @@
 
 <main>
     <section class="items-container">
-        <article class="item-card" th:each="cartItem : ${cart.getSnapshot().values()}">
+        <article class="item-card" th:each="cartItem : ${cart.getSnapshot()}">
             <img th:src="@{/img/{filename}(filename=${cartItem.item.image})}" th:alt="${cartItem.item.name}"
                  width="300" height="300">
             <a th:href="@{/items/{id} (id=${cartItem.itemId})}">

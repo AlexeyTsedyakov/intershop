@@ -8,9 +8,8 @@ import org.example.intershop.service.CartService;
 import org.example.intershop.service.ItemService;
 import org.springframework.stereotype.Service;
 
-import java.util.Collection;
+import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 @RequiredArgsConstructor
 @Service
@@ -28,25 +27,28 @@ public class CartServiceImpl implements CartService {
 
     @Override
     public void fetchItems(Cart cart) {
-        Map<Long, CartItem> snapshot = cart.getSnapshot();
-        Set<Long> ids = snapshot.keySet();
-        Collection<CartItem> cartItems = snapshot.values();
-        Map<Long, Item> itemsById = itemService.findAllByIds(ids);
-
+        List<Long> ids = getItemsIds(cart);
+        Map<Long, Item> itemsById = itemService.findAllByIdsAsMap(ids);
         if (ids.size() != itemsById.size()) {
             throw new RuntimeException("Some items were not found");
         }
 
-        cartItems.forEach(cartItem -> cartItem.setItem(itemsById.get(cartItem.getItemId())));
+        cart.getSnapshot().forEach(cartItem -> cartItem.setItem(itemsById.get(cartItem.getItemId())));
+    }
+
+    private List<Long> getItemsIds(Cart cart) {
+        return cart.getSnapshot().stream()
+                .map(CartItem::getItemId)
+                .toList();
     }
 
     private boolean hasNullItems(Cart cart) {
-        return cart.getSnapshot().values().stream()
+        return cart.getSnapshot().stream()
                 .anyMatch(cartItem -> cartItem.getItem() == null);
     }
 
     private long calculateTotalAmount(Cart cart) {
-        return cart.getSnapshot().values().stream()
+        return cart.getSnapshot().stream()
                 .mapToLong(cartItem -> cartItem.getQuantity() * (long) cartItem.getItem().getPrice())
                 .sum();
     }
