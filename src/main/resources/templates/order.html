@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Заказ</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+
+<body>
+<header class="main-header">
+    <h1 th:text="'Заказ №' + ${order.id}"></h1>
+    <nav class="main-navigation">
+        <ul>
+            <li><a th:href="@{/items}">Все товары</a></li>
+            <li><a th:href="@{/cart}">Корзина</a></li>
+            <li><a th:href="@{/orders}">Заказы</a></li>
+        </ul>
+    </nav>
+</header>
+
+<main>
+    <section class="order-item-container">
+        <article class="item-card" th:each="orderItem : ${order.getItems()}">
+            <img th:src="@{/img/{filename}(filename=${orderItem.item.image})}" th:alt="${orderItem.item.name}"
+                 width="300" height="300">
+            <a th:href="@{/items/{id} (id=${orderItem.item.id})}">
+                <h2 th:text="${orderItem.item.name}">Название товара</h2>
+            </a>
+            <p class="order-details">
+                <span class="price" th:text="'Цена: ' + ${orderItem.price}">Цена</span>
+                <span class="quantity" th:text="'Количество: ' + ${orderItem.getQuantity()}"></span>
+            </p>
+        </article>
+    </section>
+    <p>
+        <b th:text="'Итого: ' + ${order.totalAmount}">Итого</b>
+    </p>
+</main>
+</body>
+</html>

@@ -22,4 +22,8 @@ databaseChangeLog:
                   type: varchar
       rollback:
         - delete:
+            tableName: order_items
+        - delete:
+            tableName: orders
+        - delete:
             tableName: items

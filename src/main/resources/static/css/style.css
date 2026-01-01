@@ -65,3 +65,13 @@
 .checkout-panel {
     margin-top: 30px;
 }
+
+.order-details {
+    display: flex;
+    flex-direction: column;
+}
+
+.item-detail {
+    display: flex;
+    gap: 10px;
+}

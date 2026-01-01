@@ -13,19 +13,20 @@
         <ul>
             <li><a th:href="@{/items}">Все товары</a></li>
             <li><a th:href="@{/cart}">Корзина</a></li>
+            <li><a th:href="@{/orders}">Заказы</a></li>
         </ul>
     </nav>
 </header>
 
 <main>
     <section class="items-container">
-        <article class="item-card" th:each="cartItem : ${cart.getSnapshot()}">
+        <article class="item-card" th:each="cartItem : ${cart.getItems()}">
             <img th:src="@{/img/{filename}(filename=${cartItem.item.image})}" th:alt="${cartItem.item.name}"
                  width="300" height="300">
             <a th:href="@{/items/{id} (id=${cartItem.itemId})}">
                 <h2 th:text="${cartItem.item.name}">Название товара</h2>
             </a>
-            <p class="price" th:text="'Цена: ' + ${cartItem.item.price}">Цена</p>
+            <p class="price" th:text="'Цена: ' + ${cartItem.price}">Цена</p>
             <div class="cart-actions">
                 <form method="post" th:action="@{/cart/increase/{id} (id=${cartItem.itemId})}">
                     <button type="submit" class="cart-button">+</button>
@@ -44,7 +45,7 @@
 
     <div class="checkout-panel">
         <p th:text="'Итого: ' + ${totalAmount} + ' рублей'"></p>
-        <form th:if="${totalAmount > 0}" method="post" th:action="@{/order}">
+        <form th:if="${totalAmount > 0}" method="post" th:action="@{/orders}">
             <button type="submit">Заказать</button>
         </form>
     </div>

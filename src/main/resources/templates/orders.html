@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Заказы</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+
+<body>
+<header class="main-header">
+    <h1>Заказы</h1>
+    <nav class="main-navigation">
+        <ul>
+            <li><a th:href="@{/items}">Все товары</a></li>
+            <li><a th:href="@{/cart}">Корзина</a></li>
+            <li><a th:href="@{/orders}">Заказы</a></li>
+        </ul>
+    </nav>
+</header>
+
+<main>
+    <section class="orders-container">
+        <article class="order-card" th:each="order : ${orders}">
+            <a th:href="@{/orders/{id} (id=${order.id})}">
+                <h2 th:text="'Заказ №' + ${order.id}">Название товара</h2>
+            </a>
+            <ul class="order-items">
+                <li class="item-detail" th:each="orderItem : ${order.items}">
+                    <b th:text="${orderItem.item.name}"></b>
+                    <span th:text="${orderItem.quantity} + ' шт'"></span>
+                    <span th:text="${orderItem.price} + ' руб'"></span>
+                </li>
+            </ul>
+            <p class="order-details">
+                <span class="order-amount" th:text="'Сумма: ' + ${order.totalAmount}">Сумма заказа</span>
+            </p>
+        </article>
+    </section>
+    <p>
+        <b th:text="'Итого: ' + ${ordersAmount}">Итого</b>
+    </p>
+</main>
+</body>
+</html>

@@ -1,9 +1,13 @@
 package org.example.intershop.model;
 
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-@Data
+@NoArgsConstructor
+@Getter
+@Setter
 @Entity
 @Table(name = "order_items")
 public class OrderItem {
@@ -21,4 +25,13 @@ public class OrderItem {
 
     @Column(nullable = false)
     private Integer quantity;
+
+    @Column(nullable = false)
+    private Integer price;
+
+    public OrderItem(Item item, Integer quantity, Integer price) {
+        this.item = item;
+        this.quantity = quantity;
+        this.price = price;
+    }
 }

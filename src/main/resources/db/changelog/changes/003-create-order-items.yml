@@ -9,6 +9,7 @@ databaseChangeLog:
               - column:
                   name: id
                   type: bigint
+                  autoIncrement: true
                   constraints:
                     primaryKey: true
               - column:
@@ -23,6 +24,11 @@ databaseChangeLog:
                     nullable: false
               - column:
                   name: quantity
+                  type: int
+                  constraints:
+                    nullable: false
+              - column:
+                  name: price
                   type: int
                   constraints:
                     nullable: false

@@ -33,13 +33,13 @@ public class CartController {
     }
 
     @PostMapping("/decrease/{id}")
-    public String remove(@PathVariable Long id, @RequestHeader(value = HttpHeaders.REFERER) String referer) {
+    public String decrease(@PathVariable Long id, @RequestHeader(value = HttpHeaders.REFERER) String referer) {
         cart.decreaseQuantity(id);
         return redirectToReferer(referer);
     }
 
     @PostMapping("/remove/{id}")
-    public String delete(@PathVariable Long id, @RequestHeader(value = HttpHeaders.REFERER) String referer) {
+    public String remove(@PathVariable Long id, @RequestHeader(value = HttpHeaders.REFERER) String referer) {
         cart.removeItem(id);
         return redirectToReferer(referer);
     }

@@ -33,23 +33,27 @@ public class CartServiceImpl implements CartService {
             throw new RuntimeException("Some items were not found");
         }
 
-        cart.getSnapshot().forEach(cartItem -> cartItem.setItem(itemsById.get(cartItem.getItemId())));
+        cart.getItems().forEach(cartItem -> {
+            Item item = itemsById.get(cartItem.getItemId());
+            cartItem.setItem(item);
+            cartItem.setPrice(item.getPrice());
+        });
     }
 
     private List<Long> getItemsIds(Cart cart) {
-        return cart.getSnapshot().stream()
+        return cart.getItems().stream()
                 .map(CartItem::getItemId)
                 .toList();
     }
 
     private boolean hasNullItems(Cart cart) {
-        return cart.getSnapshot().stream()
+        return cart.getItems().stream()
                 .anyMatch(cartItem -> cartItem.getItem() == null);
     }
 
     private long calculateTotalAmount(Cart cart) {
-        return cart.getSnapshot().stream()
-                .mapToLong(cartItem -> cartItem.getQuantity() * (long) cartItem.getItem().getPrice())
+        return cart.getItems().stream()
+                .mapToLong(cartItem -> cartItem.getQuantity() * (long) cartItem.getPrice())
                 .sum();
     }
 }

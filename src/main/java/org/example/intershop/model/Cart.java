@@ -12,7 +12,7 @@ import java.util.Optional;
 public class Cart {
     private final List<CartItem> cartItems = new ArrayList<>();
 
-    public List<CartItem> getSnapshot() {
+    public List<CartItem> getItems() {
         return List.copyOf(cartItems);
     }
 
@@ -23,7 +23,7 @@ public class Cart {
 
     public void increaseQuantity(Long itemId) {
         CartItem cartItem = findCartItem(itemId).orElseGet(() -> {
-            var newItem = new CartItem(itemId, 0);
+            var newItem = new CartItem(itemId, 0, 0);
             cartItems.add(newItem);
             return newItem;
         });
