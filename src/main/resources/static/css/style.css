@@ -1,3 +1,10 @@
+.controls-form {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    align-items: flex-start;
+}
+
 .items-container {
     display: grid;
     grid-template-columns: repeat(3, 300px);
@@ -66,6 +73,13 @@
     margin-top: 30px;
 }
 
+.new-item-form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    align-items: flex-start;
+}
+
 .order-details {
     display: flex;
     flex-direction: column;
@@ -74,4 +88,8 @@
 .item-detail {
     display: flex;
     gap: 10px;
+}
+
+.error {
+    color: red;
 }

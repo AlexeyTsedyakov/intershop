@@ -20,4 +20,6 @@ public interface ItemService {
     Map<Long, Item> findAllByIdsAsMap(Collection<Long> ids);
 
     Page<@NonNull Item> findAll(Specification<Item> spec, Pageable pageable);
+
+    Item save(Item item);
 }

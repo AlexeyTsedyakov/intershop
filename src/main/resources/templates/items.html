@@ -14,6 +14,7 @@
             <li><a th:href="@{/items}">Все товары</a></li>
             <li><a th:href="@{/cart}">Корзина</a></li>
             <li><a th:href="@{/orders}">Заказы</a></li>
+            <li><a th:href="@{/items/new}">Добавить товар</a></li>
         </ul>
     </nav>
 </header>
@@ -22,14 +23,12 @@
     <form method="get" th:action="@{/items}" class="controls-form">
         <input type="hidden" name="page" value="0"/>
 
-        <fieldset>
-            <legend>Фильтр</legend>
+        <div>
             <label for="search">Название содержит:</label>
             <input id="search" name="search" type="search" th:value="${search}" placeholder="Например: кофе">
-        </fieldset>
+        </div>
 
-        <fieldset>
-            <legend>Сортировка</legend>
+        <div>
             <label for="sort">Сортировать:</label>
             <select id="sort" name="sort">
                 <option value="" th:selected="${sort == null || sort == ''}">По умолчанию</option>
@@ -38,10 +37,9 @@
                 <option value="name,asc" th:selected="${sort == 'name,asc'}">Название A→Я</option>
                 <option value="name,desc" th:selected="${sort == 'name,desc'}">Название Я→A</option>
             </select>
-        </fieldset>
+        </div>
 
-        <fieldset>
-            <legend>Отображение</legend>
+        <div>
             <label for="size">Показывать:</label>
             <select id="size" name="size">
                 <option value="3" th:selected="${size == 3}">3</option>
@@ -49,7 +47,7 @@
                 <option value="20" th:selected="${size == 20}">20</option>
                 <option value="50" th:selected="${size == 50}">50</option>
             </select>
-        </fieldset>
+        </div>
 
         <button type="submit" class="submit-button">Применить</button>
     </form>

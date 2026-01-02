@@ -39,6 +39,12 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
+    @Transactional
+    public Item save(Item item) {
+        return itemRepository.save(item);
+    }
+
+    @Override
     @Transactional(readOnly = true)
     public List<Item> findAllByIds(Collection<Long> ids) {
         return itemRepository.findAllById(ids);

@@ -1,9 +1,11 @@
 package org.example.intershop.controller;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.example.intershop.model.Cart;
 import org.example.intershop.model.Item;
 import org.example.intershop.repository.specification.ItemSpecification;
+import org.example.intershop.service.FileUploadService;
 import org.example.intershop.service.ItemService;
 import org.jspecify.annotations.NonNull;
 import org.springframework.data.domain.Page;
@@ -13,10 +15,11 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
 
 @RequiredArgsConstructor
 @Controller
@@ -24,6 +27,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 public class ItemController {
     private final ItemService itemService;
     private final Cart cart;
+    private final FileUploadService fileUploadService;
+
 
     @GetMapping
     public String showItems(Model model,
@@ -54,6 +59,28 @@ public class ItemController {
         model.addAttribute("cart", cart);
 
         return "item";
+    }
+
+    @GetMapping("/new")
+    public String showNewItem(Model model) {
+        model.addAttribute("item", new Item());
+        return "new-item";
+    }
+
+    @PostMapping
+    public String createItem(@Valid @ModelAttribute Item item, BindingResult bindingResult,
+                             @RequestParam MultipartFile imageFile, Model model) throws IOException {
+        if (bindingResult.hasErrors()) {
+            model.addAttribute("item", item);
+            model.addAttribute("errors", bindingResult.getAllErrors());
+            return "new-item";
+        }
+
+        String imageFilename = fileUploadService.uploadImage(imageFile);
+        item.setImage(imageFilename);
+        Item savedItem = itemService.save(item);
+
+        return "redirect:/items/" + savedItem.getId();
     }
 
     private Sort parseSort(String sort) {
