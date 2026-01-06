@@ -16,6 +16,13 @@ public class Cart {
         return List.copyOf(cartItems);
     }
 
+    public CartItem getItemById(Long id) {
+        return cartItems.stream()
+                .filter(cartItem -> cartItem.getItemId() == id)
+                .findFirst()
+                .orElse(null);
+    }
+
     public int getQuantity(Long itemId) {
         Optional<CartItem> cartItem = findCartItem(itemId);
         return cartItem.map(CartItem::getQuantity).orElse(0);
