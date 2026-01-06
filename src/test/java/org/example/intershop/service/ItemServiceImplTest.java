@@ -2,14 +2,21 @@ package org.example.intershop.service;
 
 import org.example.intershop.model.Item;
 import org.example.intershop.repository.ItemRepository;
+import org.example.intershop.repository.specification.ItemSpecification;
 import org.example.intershop.service.impl.ItemServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 
@@ -64,5 +71,54 @@ public class ItemServiceImplTest {
         List<Item> items = itemService.findAll();
         assertThat(items).isNotNull();
         assertThat(items).isNotEmpty();
+        verify(itemRepository, times(1)).findAll();
+    }
+
+    @Test
+    void findAll_shouldReturnPage() {
+        Pageable pageable = PageRequest.of(0, 1);
+        Specification<Item> spec = ItemSpecification.nameContains("test");
+        Page<Item> testPage = new PageImpl<>(List.of(testItem));
+
+        when(itemRepository.findAll(spec, pageable)).thenReturn(testPage);
+
+        Page<Item> foundPage = itemService.findAll(spec, pageable);
+        assertThat(foundPage).isNotNull();
+        assertThat(foundPage).isNotEmpty();
+        verify(itemRepository, times(1)).findAll(eq(spec), eq(pageable));
+    }
+
+    @Test
+    void findAllByIds_shouldReturnList() {
+        List<Long> ids = List.of(testItem.getId());
+        when(itemRepository.findAllById(ids)).thenReturn(List.of(testItem));
+
+        List<Item> items = itemService.findAllByIds(ids);
+        assertThat(items).isNotNull();
+        assertThat(items).isNotEmpty();
+        verify(itemRepository, times(1)).findAllById(ids);
+    }
+
+    @Test
+    void findAllByIdsAsMap_shouldReturnMap() {
+        List<Long> ids = List.of(testItem.getId());
+        when(itemRepository.findAllById(ids)).thenReturn(List.of(testItem));
+
+        Map<Long, Item> itemsById = itemService.findAllByIdsAsMap(ids);
+        assertThat(itemsById).isNotNull();
+        assertThat(itemsById).isNotEmpty();
+        verify(itemRepository, times(1)).findAllById(ids);
+    }
+
+    @Test
+    void save_shouldReturnSavedItem() {
+        when(itemRepository.save(any(Item.class))).thenReturn(testItem);
+
+        Item item = new Item();
+        Item savedItem = itemService.save(item);
+        assertThat(savedItem).isNotNull();
+        assertThat(savedItem.getId()).isNotNull();
+        assertThat(savedItem.getId()).isEqualTo(testItem.getId());
+        verify(itemRepository, times(1)).save(item);
     }
 }

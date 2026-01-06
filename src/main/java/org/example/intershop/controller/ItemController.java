@@ -7,7 +7,6 @@ import org.example.intershop.model.Item;
 import org.example.intershop.repository.specification.ItemSpecification;
 import org.example.intershop.service.FileUploadService;
 import org.example.intershop.service.ItemService;
-import org.jspecify.annotations.NonNull;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -38,7 +37,7 @@ public class ItemController {
                             @RequestParam(required = false) String search) {
         Pageable pageable = PageRequest.of(page, size, parseSort(sort));
         Specification<Item> spec = ItemSpecification.nameContains(search);
-        Page<@NonNull Item> itemPage = itemService.findAll(spec, pageable);
+        Page<Item> itemPage = itemService.findAll(spec, pageable);
 
         model.addAttribute("items", itemPage);
         model.addAttribute("currentPage", itemPage.getNumber());

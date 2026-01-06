@@ -4,14 +4,16 @@ import lombok.RequiredArgsConstructor;
 import org.example.intershop.model.Item;
 import org.example.intershop.repository.ItemRepository;
 import org.example.intershop.service.ItemService;
-import org.jspecify.annotations.NonNull;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -34,14 +36,8 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     @Transactional(readOnly = true)
-    public Page<@NonNull Item> findAll(Specification<Item> spec, Pageable pageable) {
+    public Page<Item> findAll(Specification<Item> spec, Pageable pageable) {
         return itemRepository.findAll(spec, pageable);
-    }
-
-    @Override
-    @Transactional
-    public Item save(Item item) {
-        return itemRepository.save(item);
     }
 
     @Override
@@ -55,5 +51,11 @@ public class ItemServiceImpl implements ItemService {
     public Map<Long, Item> findAllByIdsAsMap(Collection<Long> ids) {
         return findAllByIds(ids).stream()
                 .collect(Collectors.toMap(Item::getId, Function.identity()));
+    }
+
+    @Override
+    @Transactional
+    public Item save(Item item) {
+        return itemRepository.save(item);
     }
 }
