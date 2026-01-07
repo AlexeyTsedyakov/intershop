@@ -39,6 +39,13 @@ public class Order {
         this.items.add(item);
     }
 
+    public OrderItem getItemByItemId(long itemId) {
+        return items.stream()
+                .filter(orderItem -> orderItem.getItem().getId() == itemId)
+                .findFirst()
+                .orElse(null);
+    }
+
     public long calculateTotalAmount() {
         return items.stream()
                 .mapToLong(item -> (long) item.getPrice() * item.getQuantity())
