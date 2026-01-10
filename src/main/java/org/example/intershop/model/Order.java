@@ -38,4 +38,10 @@ public class Order {
         item.setOrder(this);
         this.items.add(item);
     }
+
+    public long calculateTotalAmount() {
+        return items.stream()
+                .mapToLong(item -> (long) item.getPrice() * item.getQuantity())
+                .sum();
+    }
 }

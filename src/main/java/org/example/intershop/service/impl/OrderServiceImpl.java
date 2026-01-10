@@ -43,15 +43,9 @@ public class OrderServiceImpl implements OrderService {
         cart.getItems().stream()
                 .map(cartItem -> new OrderItem(cartItem.getItem(), cartItem.getQuantity(), cartItem.getPrice()))
                 .forEach(order::addItem);
-        order.setTotalAmount(calculateTotalAmount(order));
+        order.setTotalAmount(order.calculateTotalAmount());
 
         return order;
-    }
-
-    private long calculateTotalAmount(Order order) {
-        return order.getItems().stream()
-                .mapToLong(item -> item.getQuantity() * (long) item.getPrice())
-                .sum();
     }
 
     @Override
