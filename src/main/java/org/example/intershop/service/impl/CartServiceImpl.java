@@ -2,7 +2,6 @@ package org.example.intershop.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import org.example.intershop.model.Cart;
-import org.example.intershop.model.CartItem;
 import org.example.intershop.model.Item;
 import org.example.intershop.service.CartService;
 import org.example.intershop.service.ItemService;
@@ -18,16 +17,16 @@ public class CartServiceImpl implements CartService {
 
     @Override
     public long getTotalAmount(Cart cart) {
-        if (hasNullItems(cart)) {
+        if (cart.hasNullItems()) {
             fetchItems(cart);
         }
 
-        return calculateTotalAmount(cart);
+        return cart.calculateTotalAmount();
     }
 
     @Override
     public void fetchItems(Cart cart) {
-        List<Long> ids = getItemsIds(cart);
+        List<Long> ids = cart.getItemsIds();
         Map<Long, Item> itemsById = itemService.findAllByIdsAsMap(ids);
         if (ids.size() != itemsById.size()) {
             throw new RuntimeException("Some items were not found");
@@ -38,22 +37,5 @@ public class CartServiceImpl implements CartService {
             cartItem.setItem(item);
             cartItem.setPrice(item.getPrice());
         });
-    }
-
-    private List<Long> getItemsIds(Cart cart) {
-        return cart.getItems().stream()
-                .map(CartItem::getItemId)
-                .toList();
-    }
-
-    private boolean hasNullItems(Cart cart) {
-        return cart.getItems().stream()
-                .anyMatch(cartItem -> cartItem.getItem() == null);
-    }
-
-    private long calculateTotalAmount(Cart cart) {
-        return cart.getItems().stream()
-                .mapToLong(cartItem -> cartItem.getQuantity() * (long) cartItem.getPrice())
-                .sum();
     }
 }

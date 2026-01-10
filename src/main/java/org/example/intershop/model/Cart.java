@@ -55,4 +55,21 @@ public class Cart {
                 .filter(item -> itemId.equals(item.getItemId()))
                 .findFirst();
     }
+
+    public long calculateTotalAmount() {
+        return cartItems.stream()
+                .mapToLong(item -> (long) item.getPrice() * item.getQuantity())
+                .sum();
+    }
+
+    public List<Long> getItemsIds() {
+        return cartItems.stream()
+                .map(CartItem::getItemId)
+                .toList();
+    }
+
+    public boolean hasNullItems() {
+        return cartItems.stream()
+                .anyMatch(cartItem -> cartItem.getItem() == null);
+    }
 }
