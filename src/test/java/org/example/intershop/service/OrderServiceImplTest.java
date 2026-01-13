@@ -79,12 +79,14 @@ public class OrderServiceImplTest {
         ArgumentCaptor<Order> orderCaptor = ArgumentCaptor.forClass(Order.class);
 
         Order placedOrder = orderService.placeOrder(cart);
+        long totalAmount = placedOrder.calculateTotalAmount();
 
         verify(orderRepository).save(orderCaptor.capture());
         assertThat(orderCaptor.getValue()).isSameAs(placedOrder);
 
         assertThat(placedOrder.getItems()).hasSize(2);
-        assertThat(placedOrder.getTotalAmount()).isEqualTo(cart.calculateTotalAmount());
+        assertThat(placedOrder.getTotalAmount()).isEqualTo(totalAmount);
+        assertThat(cart.getItems()).isEmpty();
 
         assertOrderItem(placedOrder, item1, 2);
         assertOrderItem(placedOrder, item2, 1);

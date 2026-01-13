@@ -34,6 +34,7 @@ public class OrderServiceImpl implements OrderService {
     public Order placeOrder(Cart cart) {
         Order order = createOrder(cart);
         orderRepository.save(order);
+        cart.clearCart();
 
         return order;
     }

@@ -49,8 +49,8 @@ public class OrderServiceIntegrationTest {
         cartService.fetchItems(cart);
 
         Order order = orderService.placeOrder(cart);
-        long expectedTotal = cart.calculateTotalAmount();
-        int expectedSize = cart.getItems().size();
+        long expectedTotal = order.calculateTotalAmount();
+        int expectedSize = order.getItems().size();
 
         assertThat(order).isNotNull();
         assertThat(order.getId()).isNotNull();
@@ -61,6 +61,7 @@ public class OrderServiceIntegrationTest {
         assertThat(savedOrder).isNotNull();
         assertThat(savedOrder.getTotalAmount()).isEqualTo(expectedTotal);
         assertThat(savedOrder.getItems()).hasSize(expectedSize);
+        assertThat(cart.getItems()).isEmpty();
     }
 
     @Test
@@ -113,7 +114,7 @@ public class OrderServiceIntegrationTest {
         Order order2 = orderService.placeOrder(cart2);
 
         long amount = orderService.getOrdersAmount(List.of(order1, order2));
-        long expectedAmount = cart1.calculateTotalAmount() + cart2.calculateTotalAmount();
+        long expectedAmount = order1.calculateTotalAmount() + order2.calculateTotalAmount();
 
         assertThat(amount).isEqualTo(expectedAmount);
     }
