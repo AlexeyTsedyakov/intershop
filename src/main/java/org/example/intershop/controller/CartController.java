@@ -45,7 +45,7 @@ public class CartController {
     }
 
     @PostMapping("/clear")
-    public String clear(@RequestParam @RequestHeader(value = HttpHeaders.REFERER) String referer) {
+    public String clear(@RequestHeader(value = HttpHeaders.REFERER) String referer) {
         cart.clearCart();
         return redirectToReferer(referer);
     }
