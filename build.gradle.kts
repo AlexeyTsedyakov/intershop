@@ -54,7 +54,10 @@ dependencies {
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 
     liquibaseRuntime("info.picocli:picocli:4.7.5")
+}
 
+tasks.jar {
+    enabled = false
 }
 
 tasks.withType<Test> {
