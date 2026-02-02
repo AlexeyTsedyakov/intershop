@@ -9,6 +9,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import reactor.core.publisher.Mono;
+import reactor.test.StepVerifier;
 
 import java.util.List;
 import java.util.Map;
@@ -40,9 +42,10 @@ public class CartServiceImplTest {
         Long id = testItem1.getId();
         List<Long> ids = List.of(id);
         testCart.increaseQuantity(id);
-        when(itemService.findAllByIdsAsMap(ids)).thenReturn(Map.of(id, testItem1));
+        when(itemService.findAllByIdsAsMap(ids)).thenReturn(Mono.just(Map.of(id, testItem1)));
 
-        cartService.fetchItems(testCart);
+        StepVerifier.create(cartService.fetchItems(testCart))
+                .verifyComplete();
         List<CartItem> cartItems = testCart.getItems();
         assertThat(cartItems).isNotNull();
         assertThat(cartItems).isNotEmpty();
@@ -61,14 +64,16 @@ public class CartServiceImplTest {
         List<Long> ids = List.of(id1, id2);
         testCart.increaseQuantity(id1);
         testCart.increaseQuantity(id2);
-        when(itemService.findAllByIdsAsMap(ids)).thenReturn(Map.of(
+        testCart.getItemById(id1).setPrice(testItem1.getPrice());
+        testCart.getItemById(id2).setPrice(testItem2.getPrice());
+
+        when(itemService.findAllByIdsAsMap(ids)).thenReturn(Mono.just(Map.of(
                 id1, testItem1,
                 id2, testItem2
-        ));
-
-        Long totalAmount = cartService.getTotalAmount(testCart);
-        Long expected = testCart.calculateTotalAmount();
-        assertThat(totalAmount).isEqualTo(expected);
+        )));
+        StepVerifier.create(cartService.getTotalAmount(testCart))
+                .expectNext(testCart.calculateTotalAmount())
+                .verifyComplete();
         verify(itemService, times(1)).findAllByIdsAsMap(ids);
     }
 
@@ -81,9 +86,10 @@ public class CartServiceImplTest {
         testCart.getItemById(id1).setItem(testItem1);
         testCart.getItemById(id2).setItem(testItem2);
 
-        Long totalAmount = cartService.getTotalAmount(testCart);
         Long expected = testCart.calculateTotalAmount();
-        assertThat(totalAmount).isEqualTo(expected);
+        StepVerifier.create(cartService.getTotalAmount(testCart))
+                .expectNext(expected)
+                .verifyComplete();
         verify(itemService, never()).findAllByIdsAsMap(any());
     }
 }

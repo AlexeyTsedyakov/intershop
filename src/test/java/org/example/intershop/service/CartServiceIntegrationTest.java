@@ -8,16 +8,14 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.transaction.annotation.Transactional;
+import reactor.test.StepVerifier;
 
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @SpringBootTest
 @ActiveProfiles("test")
-@Transactional
 public class CartServiceIntegrationTest {
 
     @Autowired
@@ -31,8 +29,15 @@ public class CartServiceIntegrationTest {
 
     @BeforeEach
     void setUp() {
-        savedItem1 = itemService.save(new Item(null, "Item 1", "img1", 100, "desc1"));
-        savedItem2 = itemService.save(new Item(null, "Item 2", "img2", 200, "desc2"));
+        Item item1 = new Item(null, "Item 1", "img1", 100, "desc1");
+        Item item2 = new Item(null, "Item 2", "img2", 200, "desc2");
+
+        StepVerifier.create(itemService.save(item1))
+                .assertNext(saved -> savedItem1 = saved)
+                .verifyComplete();
+        StepVerifier.create(itemService.save(item2))
+                .assertNext(saved -> savedItem2 = saved)
+                .verifyComplete();
     }
 
     @Test
@@ -41,7 +46,8 @@ public class CartServiceIntegrationTest {
         cart.increaseQuantity(savedItem1.getId());
         cart.increaseQuantity(savedItem2.getId());
 
-        cartService.fetchItems(cart);
+        StepVerifier.create(cartService.fetchItems(cart))
+                .verifyComplete();
 
         List<CartItem> items = cart.getItems();
         assertThat(items).hasSize(2);
@@ -62,9 +68,10 @@ public class CartServiceIntegrationTest {
         Cart cart = new Cart();
         cart.increaseQuantity(999999L);
 
-        assertThatThrownBy(() -> cartService.fetchItems(cart))
-                .isInstanceOf(RuntimeException.class)
-                .hasMessage("Some items were not found");
+        StepVerifier.create(cartService.fetchItems(cart))
+                .expectErrorMatches(throwable -> throwable instanceof RuntimeException
+                        && "Some items were not found".equals(throwable.getMessage()))
+                .verify();
     }
 
     @Test
@@ -75,10 +82,10 @@ public class CartServiceIntegrationTest {
         cart.increaseQuantity(savedItem2.getId()); // quantity = 1
         long expected = savedItem1.getPrice() * 2 + savedItem2.getPrice();
 
-        long total = cartService.getTotalAmount(cart);
+        StepVerifier.create(cartService.getTotalAmount(cart))
+                .expectNext(expected)
+                .verifyComplete();
 
-        assertThat(total).isEqualTo(expected);
-        
         assertThat(cart.getItemById(savedItem1.getId()).getItem()).isNotNull();
     }
 }

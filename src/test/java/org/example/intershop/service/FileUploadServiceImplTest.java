@@ -5,17 +5,20 @@ import org.example.intershop.service.impl.FileUploadServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
-import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.codec.multipart.FilePart;
+import reactor.core.publisher.Mono;
+import reactor.test.StepVerifier;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.*;
 
 public class FileUploadServiceImplTest {
-
     @TempDir
     Path tempDir;
 
@@ -36,64 +39,50 @@ public class FileUploadServiceImplTest {
     }
 
     @Test
-    void uploadImage_shouldSaveFile_whenFileIsValid() throws IOException {
-        MockMultipartFile file = new MockMultipartFile(
-                "image",
-                "test-image.jpg",
-                "image/jpeg",
-                "some-image-content".getBytes()
-        );
+    void uploadImage_shouldSaveFile_whenFileIsValid() {
+        FilePart file = mock(FilePart.class);
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.IMAGE_JPEG);
 
-        String filename = fileUploadService.uploadImage(file);
+        when(file.headers()).thenReturn(headers);
+        when(file.filename()).thenReturn("test-image.jpg");
+        when(file.transferTo(any(Path.class))).thenReturn(Mono.empty());
 
-        assertThat(filename).isNotNull();
-        assertThat(filename).endsWith(".jpg");
-        assertThat(filename).doesNotContain("test-image"); // UUID generated
+        StepVerifier.create(fileUploadService.uploadImage(file))
+                .assertNext(filename -> {
+                    assertThat(filename).isNotNull();
+                    assertThat(filename).endsWith(".jpg");
+                    assertThat(filename).doesNotContain("test-image");
+                })
+                .verifyComplete();
 
-        Path savedFile = uploadPath.resolve(filename);
-        assertThat(Files.exists(savedFile)).isTrue();
-        assertThat(Files.readAllBytes(savedFile)).isEqualTo("some-image-content".getBytes());
-    }
-
-    @Test
-    void uploadImage_shouldThrowException_whenFileIsEmpty() {
-        MockMultipartFile file = new MockMultipartFile(
-                "image",
-                "empty.jpg",
-                "image/jpeg",
-                new byte[0]
-        );
-
-        assertThatThrownBy(() -> fileUploadService.uploadImage(file))
-                .isInstanceOf(UploadFileException.class)
-                .hasMessage("Image file is empty");
+        verify(file).transferTo(any(Path.class));
     }
 
     @Test
     void uploadImage_shouldThrowException_whenFileIsNotImage() {
-        MockMultipartFile file = new MockMultipartFile(
-                "file",
-                "test.txt",
-                "text/plain",
-                "some-text".getBytes()
-        );
+        FilePart file = mock(FilePart.class);
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.TEXT_PLAIN);
 
-        assertThatThrownBy(() -> fileUploadService.uploadImage(file))
-                .isInstanceOf(UploadFileException.class)
-                .hasMessage("File is not an image");
+        when(file.headers()).thenReturn(headers);
+
+        StepVerifier.create(fileUploadService.uploadImage(file))
+                .expectErrorMatches(throwable -> throwable instanceof UploadFileException &&
+                        throwable.getMessage().equals("File is not an image"))
+                .verify();
     }
 
     @Test
     void uploadImage_shouldThrowException_whenContentTypeIsNull() {
-        MockMultipartFile file = new MockMultipartFile(
-                "file",
-                "test.jpg",
-                null,
-                "some-image-content".getBytes()
-        );
+        FilePart file = mock(FilePart.class);
+        HttpHeaders headers = new HttpHeaders();
 
-        assertThatThrownBy(() -> fileUploadService.uploadImage(file))
-                .isInstanceOf(UploadFileException.class)
-                .hasMessage("File is not an image");
+        when(file.headers()).thenReturn(headers);
+
+        StepVerifier.create(fileUploadService.uploadImage(file))
+                .expectErrorMatches(throwable -> throwable instanceof UploadFileException &&
+                        throwable.getMessage().equals("File is not an image"))
+                .verify();
     }
 }

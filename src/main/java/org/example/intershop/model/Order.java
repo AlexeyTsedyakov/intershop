@@ -1,10 +1,13 @@
 package org.example.intershop.model;
 
-import jakarta.persistence.*;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Transient;
+import org.springframework.data.relational.core.mapping.Column;
+import org.springframework.data.relational.core.mapping.Table;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -12,30 +15,29 @@ import java.util.List;
 
 @Getter
 @Setter
-@Entity
+@EqualsAndHashCode(of = "id")
 @Table(name = "orders")
-@EntityListeners(AuditingEntityListener.class)
 public class Order {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column("id")
     private Long id;
 
-    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<OrderItem> items = new ArrayList<>();
-
-    @Column(nullable = false)
+    @Column("total_amount")
     private Long totalAmount;
 
     @CreatedDate
-    @Column
+    @Column("created_at")
     private LocalDateTime createdAt;
+
+    @Transient
+    private List<OrderItem> items = new ArrayList<>();
 
     public List<OrderItem> getItems() {
         return List.copyOf(items);
     }
 
     public void addItem(OrderItem item) {
-        item.setOrder(this);
+        item.setOrderId(this.id);
         this.items.add(item);
     }
 

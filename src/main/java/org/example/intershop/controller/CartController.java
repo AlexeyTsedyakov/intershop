@@ -3,57 +3,74 @@ package org.example.intershop.controller;
 import lombok.RequiredArgsConstructor;
 import org.example.intershop.model.Cart;
 import org.example.intershop.service.CartService;
+import org.example.intershop.service.CartSessionService;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.reactive.result.view.Rendering;
+import org.springframework.web.server.WebSession;
+import reactor.core.publisher.Mono;
 
 @RequiredArgsConstructor
 @Controller
 @RequestMapping("/cart")
 public class CartController {
-    private final Cart cart;
     private final CartService cartService;
+    private final CartSessionService cartSessionService;
 
     @GetMapping
-    public String showCart(Model model) {
-        cartService.fetchItems(cart);
-        long totalAmount = cartService.getTotalAmount(cart);
+    public Mono<Rendering> showCart(WebSession session) {
+        Cart cart = cartSessionService.getCart(session);
 
-        model.addAttribute("cart", cart);
-        model.addAttribute("totalAmount", totalAmount);
-
-        return "cart";
+        return cartService.fetchItems(cart)
+                .then(cartService.getTotalAmount(cart))
+                .map(totalAmount -> Rendering.view("cart")
+                        .modelAttribute("cart", cart)
+                        .modelAttribute("totalAmount", totalAmount)
+                        .build());
     }
 
     @PostMapping("/increase/{id}")
-    public String add(@PathVariable Long id, @RequestHeader(value = HttpHeaders.REFERER) String referer) {
-        cart.increaseQuantity(id);
-        return redirectToReferer(referer);
+    public Mono<Rendering> add(@PathVariable Long id, @RequestHeader(value = HttpHeaders.REFERER) String referer,
+                               WebSession session) {
+        Cart cart = cartSessionService.getCart(session);
+
+        return Mono.fromRunnable(() -> cart.increaseQuantity(id))
+                .then(redirectToReferer(referer));
     }
 
     @PostMapping("/decrease/{id}")
-    public String decrease(@PathVariable Long id, @RequestHeader(value = HttpHeaders.REFERER) String referer) {
-        cart.decreaseQuantity(id);
-        return redirectToReferer(referer);
+    public Mono<Rendering> decrease(@PathVariable Long id, @RequestHeader(value = HttpHeaders.REFERER) String referer,
+                                    WebSession session) {
+        Cart cart = cartSessionService.getCart(session);
+
+        return Mono.fromRunnable(() -> cart.decreaseQuantity(id))
+                .then(redirectToReferer(referer));
     }
 
     @PostMapping("/remove/{id}")
-    public String remove(@PathVariable Long id, @RequestHeader(value = HttpHeaders.REFERER) String referer) {
-        cart.removeItem(id);
-        return redirectToReferer(referer);
+    public Mono<Rendering> remove(@PathVariable Long id, @RequestHeader(value = HttpHeaders.REFERER) String referer,
+                                  WebSession session) {
+        Cart cart = cartSessionService.getCart(session);
+
+        return Mono.fromRunnable(() -> cart.removeItem(id))
+                .then(redirectToReferer(referer));
     }
 
     @PostMapping("/clear")
-    public String clear(@RequestHeader(value = HttpHeaders.REFERER) String referer) {
-        cart.clearCart();
-        return redirectToReferer(referer);
+    public Mono<Rendering> clear(@RequestHeader(value = HttpHeaders.REFERER) String referer, WebSession session) {
+        Cart cart = cartSessionService.getCart(session);
+
+        return Mono.fromRunnable(cart::clearCart)
+                .then(redirectToReferer(referer));
     }
 
-    private String redirectToReferer(String referer) {
+    private Mono<Rendering> redirectToReferer(String referer) {
+        // Если заголовка нет, возвращаемся на главную витрину
         if (referer == null || referer.isBlank()) {
-            return "redirect:/items"; // Если заголовка нет, возвращаемся на главную витрину
+            return Mono.just(Rendering.redirectTo("/items").build());
         }
-        return "redirect:" + referer;
+
+        return Mono.just(Rendering.redirectTo(referer).build());
     }
 }

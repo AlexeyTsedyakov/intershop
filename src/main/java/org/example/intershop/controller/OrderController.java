@@ -2,44 +2,48 @@ package org.example.intershop.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.example.intershop.model.Cart;
-import org.example.intershop.model.Order;
+import org.example.intershop.service.CartSessionService;
 import org.example.intershop.service.OrderService;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-
-import java.util.List;
+import org.springframework.web.reactive.result.view.Rendering;
+import org.springframework.web.server.WebSession;
+import reactor.core.publisher.Mono;
 
 @RequiredArgsConstructor
 @Controller
 @RequestMapping("/orders")
 public class OrderController {
     private final OrderService orderService;
-    private final Cart cart;
+    private final CartSessionService cartSessionService;
 
     @GetMapping("/{id}")
-    public String showOrder(Model model, @PathVariable Long id) {
-        model.addAttribute("order", orderService.findById(id));
-
-        return "order";
+    public Mono<Rendering> showOrder(@PathVariable Long id) {
+        return orderService.findById(id)
+                .map(order -> Rendering.view("order")
+                        .modelAttribute("order", order)
+                        .build());
     }
 
     @GetMapping
-    public String showOrders(Model model) {
-        List<Order> orders = orderService.findAll();
-        model.addAttribute("orders", orders);
-        model.addAttribute("ordersAmount", orderService.getOrdersAmount(orders));
-
-        return "orders";
+    public Mono<Rendering> showOrders() {
+        return orderService.findAll()
+                .collectList()
+                .flatMap(orders -> orderService.getOrdersAmount(orders)
+                        .map(ordersAmount -> Rendering.view("orders")
+                                .modelAttribute("orders", orders)
+                                .modelAttribute("ordersAmount", ordersAmount)
+                                .build()));
     }
 
     @PostMapping
-    public String placeOrder() {
-        Order order = orderService.placeOrder(cart);
+    public Mono<Rendering> placeOrder(WebSession session) {
+        Cart cart = cartSessionService.getCart(session);
 
-        return "redirect:/orders/" + order.getId();
+        return orderService.placeOrder(cart)
+                .map(order -> Rendering.redirectTo("/orders/" + order.getId()).build());
     }
 }

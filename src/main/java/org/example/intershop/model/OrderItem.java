@@ -1,36 +1,42 @@
 package org.example.intershop.model;
 
-import jakarta.persistence.*;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Transient;
+import org.springframework.data.relational.core.mapping.Column;
+import org.springframework.data.relational.core.mapping.Table;
 
 @NoArgsConstructor
 @Getter
 @Setter
-@Entity
+@EqualsAndHashCode(of = "id")
 @Table(name = "order_items")
 public class OrderItem {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column("id")
     private Long id;
 
-    @ManyToOne
-    @JoinColumn(name = "order_id", nullable = false)
-    private Order order;
+    @Column("order_id")
+    private Long orderId;
 
-    @ManyToOne
-    @JoinColumn(name = "item_id", nullable = false)
-    private Item item;
+    @Column("item_id")
+    private Long itemId;
 
-    @Column(nullable = false)
+    @Column("quantity")
     private Integer quantity;
 
-    @Column(nullable = false)
+    @Column("price")
     private Integer price;
+
+    @Transient
+    private Item item;
 
     public OrderItem(Item item, Integer quantity, Integer price) {
         this.item = item;
+        this.itemId = item.getId();
         this.quantity = quantity;
         this.price = price;
     }

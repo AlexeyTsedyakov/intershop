@@ -4,13 +4,14 @@ import jakarta.annotation.PostConstruct;
 import org.example.intershop.exception.UploadFileException;
 import org.example.intershop.service.FileUploadService;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.MediaType;
+import org.springframework.http.codec.multipart.FilePart;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
+import reactor.core.publisher.Mono;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
 import java.util.UUID;
 
 @Service
@@ -29,27 +30,24 @@ public class FileUploadServiceImpl implements FileUploadService {
     }
 
     @Override
-    public String uploadImage(MultipartFile imageFile) throws IOException {
-        checkImageFile(imageFile);
-        String filename = generateUniqueFilename(imageFile);
-        saveImageFile(imageFile, filename);
-
-        return filename;
+    public Mono<String> uploadImage(FilePart imageFile) {
+        return Mono.defer(() -> {
+            checkImageFile(imageFile);
+            String filename = generateUniqueFilename(imageFile);
+            return saveImageFile(imageFile, filename)
+                    .thenReturn(filename);
+        });
     }
 
-    private void checkImageFile(MultipartFile imageFile) {
-        if (imageFile.isEmpty()) {
-            throw new UploadFileException("Image file is empty");
-        }
-
-        String contentType = imageFile.getContentType();
-        if (contentType == null || !contentType.startsWith("image/")) {
+    private void checkImageFile(FilePart imageFile) {
+        MediaType contentType = imageFile.headers().getContentType();
+        if (contentType == null || !contentType.toString().startsWith("image/")) {
             throw new UploadFileException("File is not an image");
         }
     }
 
-    private String generateUniqueFilename(MultipartFile imageFile) {
-        String originalFilename = imageFile.getOriginalFilename();
+    private String generateUniqueFilename(FilePart imageFile) {
+        String originalFilename = imageFile.filename();
         String extension = getExtension(originalFilename);
 
         return UUID.randomUUID() + extension;
@@ -61,8 +59,8 @@ public class FileUploadServiceImpl implements FileUploadService {
                 : "";
     }
 
-    private void saveImageFile(MultipartFile imageFile, String filename) throws IOException {
+    private Mono<Void> saveImageFile(FilePart imageFile, String filename) {
         Path filePath = uploadImagePath.resolve(filename);
-        Files.copy(imageFile.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+        return imageFile.transferTo(filePath);
     }
 }

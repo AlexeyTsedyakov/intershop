@@ -5,23 +5,28 @@ import org.example.intershop.repository.OrderRepository;
 import org.example.intershop.service.impl.OrderServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+import reactor.test.StepVerifier;
 
 import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Optional;
+import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.Mockito.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @SpringBootTest(classes = OrderServiceImpl.class)
 public class OrderServiceImplTest {
     @MockitoBean
     private OrderRepository orderRepository;
+
+    @MockitoBean
+    private OrderItemService orderItemService;
 
     @Autowired
     private OrderServiceImpl orderService;
@@ -42,32 +47,47 @@ public class OrderServiceImplTest {
     @Test
     void findById_shouldFindOrder_forExistingId() {
         long id = testOrder.getId();
-        when(orderRepository.findById(id)).thenReturn(Optional.of(testOrder));
+        when(orderRepository.findById(id)).thenReturn(Mono.just(testOrder));
+        when(orderItemService.findAllByOrderId(id)).thenReturn(Flux.empty());
 
-        Order order = orderService.findById(id);
+        Mono<Order> result = orderService.findById(id);
 
-        assertThat(order).isSameAs(testOrder);
-        verify(orderRepository, times(1)).findById(id);
+        StepVerifier.create(result)
+                .expectNext(testOrder)
+                .verifyComplete();
+
+        verify(orderRepository).findById(id);
+        verify(orderItemService).findAllByOrderId(id);
     }
 
     @Test
-    void findById_shouldThrowException_forNonExistentId() {
+    void findById_shouldReturnEmpty_forNonExistentId() {
         long id = -1L;
-        when(orderRepository.findById(id)).thenReturn(Optional.empty());
+        when(orderRepository.findById(id)).thenReturn(Mono.empty());
+        when(orderItemService.findAllByOrderId(id)).thenReturn(Flux.empty());
 
-        assertThatThrownBy(() -> orderService.findById(id)).isInstanceOf(NoSuchElementException.class);
-        verify(orderRepository, times(1)).findById(id);
+        Mono<Order> result = orderService.findById(id);
+
+        StepVerifier.create(result)
+                .verifyComplete();
+
+        verify(orderRepository).findById(id);
     }
 
     @Test
     void findAll_shouldReturnList() {
         List<Order> expected = List.of(testOrder);
-        when(orderRepository.findAll()).thenReturn(expected);
+        when(orderRepository.findAll()).thenReturn(Flux.fromIterable(expected));
+        when(orderItemService.findAllByOrderIdsAsMap(any())).thenReturn(Mono.just(Map.of()));
 
-        List<Order> orders = orderService.findAll();
+        Flux<Order> orders = orderService.findAll();
 
-        assertThat(orders).isEqualTo(expected);
-        verify(orderRepository, times(1)).findAll();
+        StepVerifier.create(orders)
+                .expectNext(testOrder)
+                .verifyComplete();
+
+        verify(orderRepository).findAll();
+        verify(orderItemService).findAllByOrderIdsAsMap(any());
     }
 
     @Test
@@ -75,40 +95,61 @@ public class OrderServiceImplTest {
         Cart cart = new Cart();
         addToCart(cart, item1, 2);
         addToCart(cart, item2, 1);
+        long expectedTotal = cart.calculateTotalAmount();
 
-        ArgumentCaptor<Order> orderCaptor = ArgumentCaptor.forClass(Order.class);
+        when(orderRepository.save(any(Order.class))).thenAnswer(invocation -> {
+            Order o = invocation.getArgument(0);
+            o.setId(1L);
+            return Mono.just(o);
+        });
+        when(orderItemService.saveAll(any())).thenAnswer(invocation -> {
+            Iterable<OrderItem> items = invocation.getArgument(0);
+            return Flux.fromIterable(items);
+        });
 
-        Order placedOrder = orderService.placeOrder(cart);
-        long totalAmount = placedOrder.calculateTotalAmount();
+        Mono<Order> result = orderService.placeOrder(cart);
 
-        verify(orderRepository).save(orderCaptor.capture());
-        assertThat(orderCaptor.getValue()).isSameAs(placedOrder);
+        StepVerifier.create(result)
+                .assertNext(placedOrder -> {
+                    assertThat(placedOrder.getTotalAmount()).isEqualTo(expectedTotal);
+                    assertThat(placedOrder.getItems()).hasSize(2);
+                    assertOrderItem(placedOrder, item1, 2);
+                    assertOrderItem(placedOrder, item2, 1);
+                })
+                .verifyComplete();
 
-        assertThat(placedOrder.getItems()).hasSize(2);
-        assertThat(placedOrder.getTotalAmount()).isEqualTo(totalAmount);
+        verify(orderRepository).save(any(Order.class));
+        verify(orderItemService).saveAll(any());
         assertThat(cart.getItems()).isEmpty();
-
-        assertOrderItem(placedOrder, item1, 2);
-        assertOrderItem(placedOrder, item2, 1);
     }
 
     @Test
     void placeOrder_withEmptyCart_shouldCreateAndSaveOrder_withZeroTotalAmount() {
         Cart cart = new Cart();
 
-        ArgumentCaptor<Order> orderCaptor = ArgumentCaptor.forClass(Order.class);
+        when(orderRepository.save(any(Order.class))).thenAnswer(invocation -> {
+            Order o = invocation.getArgument(0);
+            return Mono.just(o);
+        });
+        when(orderItemService.saveAll(any())).thenReturn(Flux.empty());
 
-        Order placedOrder = orderService.placeOrder(cart);
+        Mono<Order> result = orderService.placeOrder(cart);
 
-        verify(orderRepository).save(orderCaptor.capture());
-        assertThat(orderCaptor.getValue()).isSameAs(placedOrder);
-        assertThat(placedOrder.getItems()).isEmpty();
-        assertThat(placedOrder.getTotalAmount()).isEqualTo(0L);
+        StepVerifier.create(result)
+                .assertNext(placedOrder -> {
+                    assertThat(placedOrder.getItems()).isEmpty();
+                    assertThat(placedOrder.getTotalAmount()).isEqualTo(0L);
+                })
+                .verifyComplete();
+
+        verify(orderRepository).save(any(Order.class));
     }
 
     @Test
     void getOrdersAmount_shouldReturn0_forEmptyList() {
-        assertThat(orderService.getOrdersAmount(List.of())).isEqualTo(0L);
+        StepVerifier.create(orderService.getOrdersAmount(List.of()))
+                .expectNext(0L)
+                .verifyComplete();
     }
 
     @Test
@@ -118,9 +159,9 @@ public class OrderServiceImplTest {
         order1.setTotalAmount(100L);
         order2.setTotalAmount(250L);
 
-        long amount = orderService.getOrdersAmount(List.of(order1, order2));
-
-        assertThat(amount).isEqualTo(350L);
+        StepVerifier.create(orderService.getOrdersAmount(List.of(order1, order2)))
+                .expectNext(350L)
+                .verifyComplete();
     }
 
     private void addToCart(Cart cart, Item item, int quantity) {
@@ -140,6 +181,6 @@ public class OrderServiceImplTest {
         assertThat(orderItem.getItem()).isEqualTo(expectedItem);
         assertThat(orderItem.getQuantity()).isEqualTo(expectedQuantity);
         assertThat(orderItem.getPrice()).isEqualTo(expectedItem.getPrice());
-        assertThat(orderItem.getOrder()).isSameAs(order);
+        assertThat(orderItem.getOrderId()).isEqualTo(order.getId());
     }
 }

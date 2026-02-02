@@ -6,16 +6,15 @@ import org.example.intershop.repository.ItemRepository;
 import org.example.intershop.service.ItemService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.relational.core.query.Criteria;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Service
@@ -24,38 +23,39 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     @Transactional(readOnly = true)
-    public Item findById(long id) {
-        return itemRepository.findById(id).orElseThrow(NoSuchElementException::new);
+    public Mono<Item> findById(long id) {
+        return itemRepository.findById(id)
+                .switchIfEmpty(Mono.error(NoSuchElementException::new));
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<Item> findAll() {
+    public Flux<Item> findAll() {
         return itemRepository.findAll();
     }
 
     @Override
     @Transactional(readOnly = true)
-    public Page<Item> findAll(Specification<Item> spec, Pageable pageable) {
-        return itemRepository.findAll(spec, pageable);
+    public Mono<Page<Item>> findAll(Criteria criteria, Pageable pageable) {
+        return itemRepository.findAll(criteria, pageable);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<Item> findAllByIds(Collection<Long> ids) {
+    public Flux<Item> findAllByIds(Collection<Long> ids) {
         return itemRepository.findAllById(ids);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public Map<Long, Item> findAllByIdsAsMap(Collection<Long> ids) {
-        return findAllByIds(ids).stream()
-                .collect(Collectors.toMap(Item::getId, Function.identity()));
+    public Mono<Map<Long, Item>> findAllByIdsAsMap(Collection<Long> ids) {
+        return findAllByIds(ids)
+                .collectMap(Item::getId);
     }
 
     @Override
     @Transactional
-    public Item save(Item item) {
+    public Mono<Item> save(Item item) {
         return itemRepository.save(item);
     }
 }

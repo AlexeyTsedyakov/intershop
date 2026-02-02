@@ -1,40 +1,39 @@
 package org.example.intershop.model;
 
-import jakarta.persistence.*;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.relational.core.mapping.Column;
+import org.springframework.data.relational.core.mapping.Table;
 
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-@Entity
+@EqualsAndHashCode(of = "id")
 @Table(name = "items")
 public class Item {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column("id")
     private Long id;
 
     @NotBlank
     @Size(min = 2, max = 256)
-    @Column(nullable = false)
+    @Column("name")
     private String name;
 
-    @Column
+    @Column("image")
     private String image;
 
     @NotNull
     @Min(1)
-    @Column(nullable = false)
+    @Column("price")
     private Integer price;
 
     @Size(max = 256)
-    @Column
+    @Column("description")
     private String description;
 }

@@ -5,15 +5,20 @@ import org.example.intershop.model.Order;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
+import org.springframework.boot.data.r2dbc.test.autoconfigure.DataR2dbcTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.test.context.ActiveProfiles;
+import reactor.core.publisher.Mono;
+import reactor.test.StepVerifier;
 
-import java.util.Optional;
+import java.time.temporal.ChronoUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.within;
 
-@DataJpaTest
+@DataR2dbcTest
 @Import(JpaAuditingConfig.class)
+@ActiveProfiles("test")
 public class OrderRepositoryIntegrationTest {
     @Autowired
     private OrderRepository orderRepository;
@@ -24,7 +29,10 @@ public class OrderRepositoryIntegrationTest {
     void setUp() {
         Order order = new Order();
         order.setTotalAmount(0L);
-        savedOrder = orderRepository.saveAndFlush(order);
+
+        StepVerifier.create(orderRepository.deleteAll().then(orderRepository.save(order)))
+                .assertNext(saved -> savedOrder = saved)
+                .verifyComplete();
     }
 
     @Test
@@ -32,35 +40,39 @@ public class OrderRepositoryIntegrationTest {
         Order order = new Order();
         order.setTotalAmount(100L);
 
-        Order savedOrder = orderRepository.saveAndFlush(order);
-
-        assertThat(savedOrder).isNotNull();
-        assertThat(savedOrder)
-                .usingRecursiveComparison()
-                .ignoringFields("id")
-                .isEqualTo(order);
+        StepVerifier.create(orderRepository.save(order))
+                .assertNext(saved -> {
+                    assertThat(saved).isNotNull();
+                    assertThat(saved)
+                            .usingRecursiveComparison()
+                            .ignoringFields("id")
+                            .isEqualTo(order);
+                })
+                .verifyComplete();
     }
 
     @Test
-    void findById_shouldReturnNotEmptyOptional_withCorrectId() {
+    void findById_shouldReturnNotEmpty_withCorrectId() {
         long id = savedOrder.getId();
 
-        Optional<Order> order = orderRepository.findById(id);
-
-        assertThat(order)
-                .isPresent()
-                .get()
-                .usingRecursiveComparison()
-                .isEqualTo(savedOrder);
+        StepVerifier.create(orderRepository.findById(id))
+                .assertNext(found -> {
+                    assertThat(found)
+                            .usingRecursiveComparison()
+                            .ignoringFields("createdAt")
+                            .isEqualTo(savedOrder);
+                    assertThat(found.getCreatedAt())
+                            .isCloseTo(savedOrder.getCreatedAt(), within(1, ChronoUnit.MILLIS)); // H2 режет наносекунды
+                })
+                .verifyComplete();
     }
 
     @Test
-    void findById_shouldReturnEmptyOptional_withWrongId() {
+    void findById_shouldReturnEmpty_withWrongId() {
         long id = -1L;
 
-        Optional<Order> order = orderRepository.findById(id);
-
-        assertThat(order).isEmpty();
+        StepVerifier.create(orderRepository.findById(id))
+                .verifyComplete();
     }
 
     @Test
@@ -68,24 +80,28 @@ public class OrderRepositoryIntegrationTest {
         long id = savedOrder.getId();
         long totalAmount = 150;
 
-        Order order = orderRepository.findById(id).orElse(null);
-        assertThat(order).isNotNull();
-        assertThat(order.getId()).isEqualTo(id);
+        Mono<Order> updatedMono = orderRepository.findById(id)
+                .doOnNext(order -> order.setTotalAmount(totalAmount))
+                .flatMap(orderRepository::save);
 
-        order.setTotalAmount(totalAmount);
-        Order updatedOrder = orderRepository.save(order);
-        assertThat(updatedOrder).isNotNull();
-        assertThat(updatedOrder.getId()).isEqualTo(id);
-        assertThat(updatedOrder.getTotalAmount()).isEqualTo(totalAmount);
+        StepVerifier.create(updatedMono)
+                .assertNext(updated -> {
+                    assertThat(updated).isNotNull();
+                    assertThat(updated.getId()).isEqualTo(id);
+                    assertThat(updated.getTotalAmount()).isEqualTo(totalAmount);
+                })
+                .verifyComplete();
     }
 
     @Test
     void deleteById_shouldDeleteOrder() {
         long id = savedOrder.getId();
 
-        orderRepository.deleteById(id);
-        Optional<Order> deletedOrder = orderRepository.findById(id);
+        StepVerifier.create(orderRepository.deleteById(id))
+                .verifyComplete();
 
-        assertThat(deletedOrder).isEmpty();
+        StepVerifier.create(orderRepository.findById(id))
+                .verifyComplete();
     }
 }
+

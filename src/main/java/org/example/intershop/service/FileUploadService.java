@@ -1,9 +1,8 @@
 package org.example.intershop.service;
 
-import org.springframework.web.multipart.MultipartFile;
-
-import java.io.IOException;
+import org.springframework.http.codec.multipart.FilePart;
+import reactor.core.publisher.Mono;
 
 public interface FileUploadService {
-    String uploadImage(MultipartFile imageFile) throws IOException;
+    Mono<String> uploadImage(FilePart imageFile);
 }

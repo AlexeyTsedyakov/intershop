@@ -4,82 +4,88 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.example.intershop.model.Cart;
 import org.example.intershop.model.Item;
-import org.example.intershop.repository.specification.ItemSpecification;
+import org.example.intershop.repository.criteria.ItemCriteria;
+import org.example.intershop.service.CartSessionService;
 import org.example.intershop.service.FileUploadService;
 import org.example.intershop.service.ItemService;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.relational.core.query.Criteria;
+import org.springframework.http.codec.multipart.FilePart;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-
-import java.io.IOException;
+import org.springframework.web.reactive.result.view.Rendering;
+import org.springframework.web.server.WebSession;
+import reactor.core.publisher.Mono;
 
 @RequiredArgsConstructor
 @Controller
 @RequestMapping("/items")
 public class ItemController {
     private final ItemService itemService;
-    private final Cart cart;
+    private final CartSessionService cartSessionService;
     private final FileUploadService fileUploadService;
 
 
     @GetMapping
-    public String showItems(Model model,
-                            @RequestParam(defaultValue = "0") int page,
-                            @RequestParam(defaultValue = "3") int size,
-                            @RequestParam(required = false) String sort,
-                            @RequestParam(required = false) String search) {
+    public Mono<Rendering> showItems(WebSession session,
+                                     @RequestParam(defaultValue = "0") int page,
+                                     @RequestParam(defaultValue = "3") int size,
+                                     @RequestParam(required = false) String sort,
+                                     @RequestParam(required = false) String search) {
         Pageable pageable = PageRequest.of(page, size, parseSort(sort));
-        Specification<Item> spec = ItemSpecification.nameContains(search);
-        Page<Item> itemPage = itemService.findAll(spec, pageable);
+        Criteria criteria = ItemCriteria.nameContains(search);
+        Cart cart = cartSessionService.getCart(session);
 
-        model.addAttribute("items", itemPage);
-        model.addAttribute("currentPage", itemPage.getNumber());
-        model.addAttribute("totalPages", itemPage.getTotalPages());
-        model.addAttribute("size", size);
-        model.addAttribute("sort", sort);
-        model.addAttribute("search", search);
-        model.addAttribute("cart", cart);
-
-        return "items";
+        return itemService.findAll(criteria, pageable)
+                .map(itemPage -> Rendering.view("items")
+                        .modelAttribute("items", itemPage)
+                        .modelAttribute("currentPage", itemPage.getNumber())
+                        .modelAttribute("totalPages", itemPage.getTotalPages())
+                        .modelAttribute("size", size)
+                        .modelAttribute("sort", sort)
+                        .modelAttribute("search", search)
+                        .modelAttribute("cart", cart)
+                        .build()
+                );
     }
 
     @GetMapping("/{id}")
-    public String showItem(Model model, @PathVariable Long id) {
-        Item item = itemService.findById(id);
+    public Mono<Rendering> showItem(@PathVariable Long id, WebSession session) {
+        Cart cart = cartSessionService.getCart(session);
 
-        model.addAttribute("item", item);
-        model.addAttribute("cart", cart);
-
-        return "item";
+        return itemService.findById(id)
+                .map(item -> Rendering.view("item")
+                        .modelAttribute("item", item)
+                        .modelAttribute("cart", cart)
+                        .build()
+                );
     }
 
     @GetMapping("/new")
-    public String showNewItem(Model model) {
-        model.addAttribute("item", new Item());
-        return "new-item";
+    public Mono<Rendering> showNewItem() {
+        return Mono.just(Rendering.view("new-item")
+                .modelAttribute("item", new Item())
+                .build());
     }
 
     @PostMapping
-    public String createItem(@Valid @ModelAttribute Item item, BindingResult bindingResult,
-                             @RequestParam MultipartFile imageFile, Model model) throws IOException {
+    public Mono<Rendering> createItem(@Valid @ModelAttribute Item item, BindingResult bindingResult,
+                                      @RequestPart FilePart imageFile) {
+
         if (bindingResult.hasErrors()) {
-            model.addAttribute("item", item);
-            model.addAttribute("errors", bindingResult.getAllErrors());
-            return "new-item";
+            return Mono.just(Rendering.view("new-item")
+                    .modelAttribute("item", item)
+                    .modelAttribute("errors", bindingResult.getAllErrors())
+                    .build());
         }
 
-        String imageFilename = fileUploadService.uploadImage(imageFile);
-        item.setImage(imageFilename);
-        Item savedItem = itemService.save(item);
-
-        return "redirect:/items/" + savedItem.getId();
+        return fileUploadService.uploadImage(imageFile)
+                .doOnNext(item::setImage)
+                .flatMap(it -> itemService.save(item))
+                .map(savedItem -> Rendering.redirectTo("/items/" + savedItem.getId()).build());
     }
 
     private Sort parseSort(String sort) {

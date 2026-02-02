@@ -1,124 +1,145 @@
 package org.example.intershop.service;
 
 import org.example.intershop.model.Item;
-import org.example.intershop.repository.specification.ItemSpecification;
+import org.example.intershop.repository.ItemRepository;
+import org.example.intershop.repository.OrderItemRepository;
+import org.example.intershop.repository.criteria.ItemCriteria;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.relational.core.query.Criteria;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.transaction.annotation.Transactional;
+import reactor.test.StepVerifier;
 
 import java.util.List;
-import java.util.Map;
 import java.util.NoSuchElementException;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @SpringBootTest
 @ActiveProfiles("test")
-@Transactional
 public class ItemServiceIntegrationTest {
     @Autowired
     private ItemService itemService;
 
-    private Item testItem;
+    @Autowired
+    private ItemRepository itemRepository;
+
+    @Autowired
+    private OrderItemRepository orderItemRepository;
+
+    private Item savedItem;
 
     @BeforeEach
     void setUp() {
-        testItem = new Item(null, "test item", "image", 100, "test");
+        orderItemRepository.deleteAll().block();
+        itemRepository.deleteAll().block();
+
+        Item item = new Item(null, "test item", "image", 100, "test");
+        savedItem = itemRepository.save(item).block();
     }
 
     @Test
     void save_shouldSaveNewItem() {
-        Item item = itemService.save(testItem);
+        Item newItem = new Item(null, "new item", "image", 100, "test");
 
-        assertThat(item).isNotNull();
-        assertThat(item.getId()).isNotNull();
-        assertThat(item)
-                .usingRecursiveComparison()
-                .ignoringFields("id")
-                .isEqualTo(testItem);
+        itemService.save(newItem)
+                .as(StepVerifier::create)
+                .assertNext(item -> {
+                    assertThat(item).isNotNull();
+                    assertThat(item.getId()).isNotNull();
+                    assertThat(item)
+                            .usingRecursiveComparison()
+                            .ignoringFields("id")
+                            .isEqualTo(newItem);
+                })
+                .verifyComplete();
     }
 
     @Test
     void save_shouldUpdateExistentItem() {
         String newName = "new name";
-        Item item = itemService.save(testItem);
+        savedItem.setName(newName);
 
-        assertThat(item).isNotNull();
-        assertThat(item.getId()).isNotNull();
-        assertThat(item)
-                .usingRecursiveComparison()
-                .ignoringFields("id")
-                .isEqualTo(testItem);
-
-        item.setName(newName);
-        item = itemService.save(item);
-
-        assertThat(item.getName()).isEqualTo(newName);
+        itemService.save(savedItem)
+                .as(StepVerifier::create)
+                .assertNext(item -> assertThat(item.getName()).isEqualTo(newName))
+                .verifyComplete();
     }
 
     @Test
     void findById_shouldReturnItem_withCorrectId() {
-        Item item = itemService.save(testItem);
+        long id = savedItem.getId();
 
-        assertThat(item).isNotNull();
-        assertThat(item.getId()).isNotNull();
-
-        Item savedItem = itemService.findById(item.getId());
-
-        assertThat(savedItem).isNotNull();
-        assertThat(savedItem.getId()).isEqualTo(item.getId());
+        itemService.findById(id)
+                .as(StepVerifier::create)
+                .assertNext(foundItem -> {
+                    assertThat(foundItem).isNotNull();
+                    assertThat(foundItem.getId()).isEqualTo(id);
+                })
+                .verifyComplete();
     }
 
     @Test
-    void findById_shouldThrowException_withWrongId() {
+    void findById_shouldThrowError_withWrongId() {
         long id = -1L;
 
-        assertThatThrownBy(() -> itemService.findById(id)).isInstanceOf(NoSuchElementException.class);
+        itemService.findById(id)
+                .as(StepVerifier::create)
+                .verifyError(NoSuchElementException.class);
     }
 
     @Test
     void findAll_shouldReturnList() {
-        Item item = itemService.save(testItem);
-        List<Item> items = itemService.findAll();
-
-        assertThat(items).isNotEmpty();
-        assertThat(items).contains(item);
+        itemService.findAll()
+                .collectList()
+                .as(StepVerifier::create)
+                .assertNext(items -> {
+                    assertThat(items).isNotEmpty();
+                    assertThat(items).contains(savedItem);
+                })
+                .verifyComplete();
     }
 
     @Test
     void findAll_shouldReturnPage() {
-        Item item = itemService.save(testItem);
         Pageable pageable = PageRequest.of(0, 1);
-        Specification<Item> spec = ItemSpecification.nameContains(testItem.getName());
+        Criteria criteria = ItemCriteria.nameContains(savedItem.getName());
 
-        Page<Item> page = itemService.findAll(spec, pageable);
-        assertThat(page).isNotEmpty();
-        assertThat(page).contains(item);
+        itemService.findAll(criteria, pageable)
+                .as(StepVerifier::create)
+                .assertNext(page -> {
+                    assertThat(page).isNotEmpty();
+                    assertThat(page).contains(savedItem);
+                })
+                .verifyComplete();
     }
 
     @Test
     void findAllByIds_shouldReturnList() {
-        Item item = itemService.save(testItem);
-        List<Item> items = itemService.findAllByIds(List.of(item.getId()));
-
-        assertThat(items).isNotEmpty();
-        assertThat(items).contains(item);
+        itemService.findAllByIds(List.of(savedItem.getId()))
+                .collectList()
+                .as(StepVerifier::create)
+                .assertNext(items -> {
+                    assertThat(items).isNotEmpty();
+                    assertThat(items).contains(savedItem);
+                })
+                .verifyComplete();
     }
 
     @Test
     void findAllByIdAsMap_shouldReturnMap() {
-        Item item = itemService.save(testItem);
-        Map<Long, Item> itemsById = itemService.findAllByIdsAsMap(List.of(item.getId()));
+        long id = savedItem.getId();
 
-        assertThat(itemsById).isNotEmpty();
-        assertThat(itemsById).containsKey(item.getId());
+        itemService.findAllByIdsAsMap(List.of(id))
+                .as(StepVerifier::create)
+                .assertNext(itemsById -> {
+                    assertThat(itemsById).isNotEmpty();
+                    assertThat(itemsById).containsKey(id);
+                })
+                .verifyComplete();
     }
 }

@@ -4,58 +4,68 @@ import org.example.intershop.model.Item;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
-
-import java.util.Optional;
+import org.springframework.boot.data.r2dbc.test.autoconfigure.DataR2dbcTest;
+import org.springframework.test.context.ActiveProfiles;
+import reactor.core.publisher.Mono;
+import reactor.test.StepVerifier;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@DataJpaTest
+@DataR2dbcTest
+@ActiveProfiles("test")
 public class ItemRepositoryIntegrationTest {
     @Autowired
     private ItemRepository itemRepository;
+
+    @Autowired
+    private OrderItemRepository orderItemRepository;
 
     private Item savedItem;
 
     @BeforeEach
     void setUp() {
         Item item = new Item(null, "name", "image", 100, "description");
-        savedItem = itemRepository.saveAndFlush(item);
+        StepVerifier.create(orderItemRepository.deleteAll()
+                        .then(itemRepository.deleteAll())
+                        .then(itemRepository.save(item)))
+                .assertNext(saved -> savedItem = saved)
+                .verifyComplete();
     }
 
     @Test
     void save_shouldSaveItem_forNewId() {
         Item item = new Item(null, "test", "test", 80, "test");
 
-        Item savedItem = itemRepository.saveAndFlush(item);
-
-        assertThat(savedItem).isNotNull();
-        assertThat(savedItem.getId()).isNotNull();
-        assertThat(savedItem)
-                .usingRecursiveComparison()
-                .ignoringFields("id")
-                .isEqualTo(item);
+        StepVerifier.create(itemRepository.save(item))
+                .assertNext(saved -> {
+                    assertThat(saved).isNotNull();
+                    assertThat(saved.getId()).isNotNull();
+                    assertThat(saved)
+                            .usingRecursiveComparison()
+                            .ignoringFields("id")
+                            .isEqualTo(item);
+                })
+                .verifyComplete();
     }
 
     @Test
     void findById_shouldReturnId_forExistingId() {
         long id = savedItem.getId();
 
-        Optional<Item> item = itemRepository.findById(id);
-
-        assertThat(item)
-                .isPresent()
-                .get()
-                .usingRecursiveComparison()
-                .isEqualTo(savedItem);
+        StepVerifier.create(itemRepository.findById(id))
+                .assertNext(item -> assertThat(item)
+                        .usingRecursiveComparison()
+                        .isEqualTo(savedItem))
+                .verifyComplete();
     }
 
     @Test
-    void findById_shouldReturnNull_forNonExistingId() {
+    void findById_shouldReturnEmpty_forNonExistingId() {
         long id = -1L;
 
-        Optional<Item> item = itemRepository.findById(id);
-        assertThat(item).isEmpty();
+        StepVerifier.create(itemRepository.findById(id))
+                .expectNextCount(0)
+                .verifyComplete();
     }
 
     @Test
@@ -63,25 +73,30 @@ public class ItemRepositoryIntegrationTest {
         Long id = savedItem.getId();
         String name = "new name";
 
-        Item item = itemRepository.findById(id).orElse(null);
-        assertThat(item).isNotNull();
-        assertThat(item.getId()).isEqualTo(id);
+        Mono<Item> updatedMono = itemRepository.findById(id)
+                .map(item -> {
+                    item.setName(name);
+                    return item;
+                })
+                .flatMap(itemRepository::save);
 
-        item.setName(name);
-        Item updatedItem = itemRepository.saveAndFlush(item);
-
-        assertThat(updatedItem).isNotNull();
-        assertThat(updatedItem.getId()).isEqualTo(id);
-        assertThat(updatedItem.getName()).isEqualTo(name);
+        StepVerifier.create(updatedMono)
+                .assertNext(updatedItem -> {
+                    assertThat(updatedItem).isNotNull();
+                    assertThat(updatedItem.getId()).isEqualTo(id);
+                    assertThat(updatedItem.getName()).isEqualTo(name);
+                })
+                .verifyComplete();
     }
 
     @Test
     void deleteById_shouldDelete_forExistingId() {
         long id = savedItem.getId();
 
-        itemRepository.deleteById(id);
+        StepVerifier.create(itemRepository.deleteById(id))
+                .verifyComplete();
 
-        Optional<Item> deletedItem = itemRepository.findById(id);
-        assertThat(deletedItem).isEmpty();
+        StepVerifier.create(itemRepository.findById(id))
+                .verifyComplete();
     }
 }

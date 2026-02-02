@@ -2,28 +2,33 @@ package org.example.intershop.controller;
 
 import org.example.intershop.model.Cart;
 import org.example.intershop.model.Order;
+import org.example.intershop.service.CartSessionService;
 import org.example.intershop.service.OrderService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.boot.webflux.test.autoconfigure.WebFluxTest;
+import org.springframework.http.HttpHeaders;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.reactive.server.WebTestClient;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 import java.util.List;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@WebMvcTest(OrderController.class)
+@WebFluxTest(OrderController.class)
 public class OrderControllerTest {
     @Autowired
-    private MockMvc mockMvc;
+    private WebTestClient webTestClient;
 
     @MockitoBean
     private OrderService orderService;
+
+    @MockitoBean
+    private CartSessionService cartSessionService;
 
     @MockitoBean
     private Cart cart;
@@ -37,42 +42,41 @@ public class OrderControllerTest {
     }
 
     @Test
-    void showOrder_shouldReturnView() throws Exception {
+    void showOrder_shouldReturnView() {
         Long id = testOrder.getId();
-        when(orderService.findById(id)).thenReturn(testOrder);
+        when(orderService.findById(id)).thenReturn(Mono.just(testOrder));
 
-        mockMvc.perform(get("/orders/" + id))
-                .andExpect(status().isOk())
-                .andExpect(view().name("order"))
-                .andExpect(model().attribute("order", testOrder));
+        webTestClient.get().uri("/orders/" + id)
+                .exchange()
+                .expectStatus().isOk();
 
         verify(orderService, times(1)).findById(id);
     }
 
     @Test
-    void showOrders_shouldReturnView() throws Exception {
+    void showOrders_shouldReturnView() {
         List<Order> orders = List.of(testOrder);
         long ordersAmount = 155L;
-        when(orderService.findAll()).thenReturn(orders);
-        when(orderService.getOrdersAmount(anyList())).thenReturn(ordersAmount);
+        when(orderService.findAll()).thenReturn(Flux.fromIterable(orders));
+        when(orderService.getOrdersAmount(orders)).thenReturn(Mono.just(ordersAmount));
 
-        mockMvc.perform(get("/orders"))
-                .andExpect(status().isOk())
-                .andExpect(view().name("orders"))
-                .andExpect(model().attribute("orders", orders))
-                .andExpect(model().attribute("ordersAmount", ordersAmount));
+        webTestClient.get().uri("/orders")
+                .exchange()
+                .expectStatus().isOk();
 
         verify(orderService, times(1)).findAll();
         verify(orderService, times(1)).getOrdersAmount(orders);
     }
 
     @Test
-    void placeOrder_shouldRedirect() throws Exception {
-        when(orderService.placeOrder(any(Cart.class))).thenReturn(testOrder);
+    void placeOrder_shouldRedirect() {
+        when(cartSessionService.getCart(any())).thenReturn(cart);
+        when(orderService.placeOrder(any(Cart.class))).thenReturn(Mono.just(testOrder));
 
-        mockMvc.perform(post("/orders"))
-                .andExpect(status().is3xxRedirection())
-                .andExpect(redirectedUrl("/orders/" + testOrder.getId()));
+        webTestClient.post().uri("/orders")
+                .exchange()
+                .expectStatus().is3xxRedirection()
+                .expectHeader().valueEquals(HttpHeaders.LOCATION, "/orders/" + testOrder.getId());
 
         verify(orderService, times(1)).placeOrder(any(Cart.class));
     }

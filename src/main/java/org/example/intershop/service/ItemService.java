@@ -1,25 +1,25 @@
 package org.example.intershop.service;
 
 import org.example.intershop.model.Item;
-import org.jspecify.annotations.NonNull;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.relational.core.query.Criteria;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
 
 public interface ItemService {
-    Item findById(long id);
+    Mono<Item> findById(long id);
 
-    List<Item> findAll();
+    Flux<Item> findAll();
 
-    List<Item> findAllByIds(Collection<Long> ids);
+    Flux<Item> findAllByIds(Collection<Long> ids);
 
-    Map<Long, Item> findAllByIdsAsMap(Collection<Long> ids);
+    Mono<Map<Long, Item>> findAllByIdsAsMap(Collection<Long> ids);
 
-    Page<@NonNull Item> findAll(Specification<Item> spec, Pageable pageable);
+    Mono<Page<Item>> findAll(Criteria criteria, Pageable pageable);
 
-    Item save(Item item);
+    Mono<Item> save(Item item);
 }

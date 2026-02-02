@@ -1,9 +1,10 @@
 package org.example.intershop.service;
 
 import org.example.intershop.model.Cart;
+import reactor.core.publisher.Mono;
 
 public interface CartService {
-    long getTotalAmount(Cart cart);
+    Mono<Long> getTotalAmount(Cart cart);
 
-    void fetchItems(Cart cart);
+    Mono<Void> fetchItems(Cart cart);
 }

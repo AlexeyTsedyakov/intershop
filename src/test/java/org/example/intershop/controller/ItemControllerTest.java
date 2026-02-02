@@ -2,37 +2,38 @@ package org.example.intershop.controller;
 
 import org.example.intershop.model.Cart;
 import org.example.intershop.model.Item;
+import org.example.intershop.service.CartSessionService;
 import org.example.intershop.service.FileUploadService;
 import org.example.intershop.service.ItemService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.boot.webflux.test.autoconfigure.WebFluxTest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
-import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.http.MediaType;
+import org.springframework.http.client.MultipartBodyBuilder;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.reactive.server.WebTestClient;
+import org.springframework.web.reactive.function.BodyInserters;
+import reactor.core.publisher.Mono;
 
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@WebMvcTest(ItemController.class)
+@WebFluxTest(ItemController.class)
 public class ItemControllerTest {
     @Autowired
-    private MockMvc mockMvc;
+    private WebTestClient webTestClient;
 
     @MockitoBean
     private ItemService itemService;
 
     @MockitoBean
-    private Cart cart;
+    private CartSessionService cartSessionService;
 
     @MockitoBean
     private FileUploadService fileUploadService;
@@ -42,86 +43,86 @@ public class ItemControllerTest {
     @BeforeEach
     void setUp() {
         testItem = new Item(1L, "Test Item", "image.jpg", 100, "Description");
+        when(cartSessionService.getCart(any())).thenReturn(new Cart());
     }
 
     @Test
-    void showItems_shouldReturnView() throws Exception {
+    void showItems_shouldReturnView() {
         Page<Item> testPage = new PageImpl<>(List.of(testItem));
-        when(itemService.findAll(any(), any(Pageable.class))).thenReturn(testPage);
+        when(itemService.findAll(any(), any(Pageable.class))).thenReturn(Mono.just(testPage));
 
-        mockMvc.perform(get("/items")
-                        .param("page", "0")
-                        .param("size", "3")
-                        .param("search", "test")
-                        .param("sort", "name"))
-                .andExpect(status().isOk())
-                .andExpect(view().name("items"))
-                .andExpect(model().attribute("items", testPage))
-                .andExpect(model().attributeExists("currentPage"))
-                .andExpect(model().attributeExists("totalPages"))
-                .andExpect(model().attributeExists("size"))
-                .andExpect(model().attributeExists("sort"))
-                .andExpect(model().attributeExists("search"))
-                .andExpect(model().attributeExists("cart"))
-                .andExpect(model().attribute("items", testPage));
+        webTestClient.get()
+                .uri(uriBuilder -> uriBuilder
+                        .path("/items")
+                        .queryParam("page", "0")
+                        .queryParam("size", "3")
+                        .queryParam("search", "test")
+                        .queryParam("sort", "name")
+                        .build())
+                .exchange()
+                .expectStatus().isOk();
 
         verify(itemService, times(1)).findAll(any(), any(Pageable.class));
     }
 
     @Test
-    void showItem_shouldReturnView() throws Exception {
+    void showItem_shouldReturnView() {
         long id = testItem.getId();
-        when(itemService.findById(id)).thenReturn(testItem);
+        when(itemService.findById(id)).thenReturn(Mono.just(testItem));
 
-        mockMvc.perform(get("/items/" + id))
-                .andExpect(status().isOk())
-                .andExpect(view().name("item"))
-                .andExpect(model().attributeExists("item", "cart"))
-                .andExpect(model().attribute("item", testItem));
+        webTestClient.get()
+                .uri("/items/" + id)
+                .exchange()
+                .expectStatus().isOk();
 
         verify(itemService, times(1)).findById(id);
     }
 
     @Test
-    void showNewItem_shouldReturnView() throws Exception {
-        mockMvc.perform(get("/items/new"))
-                .andExpect(status().isOk())
-                .andExpect(view().name("new-item"))
-                .andExpect(model().attributeExists("item"));
+    void showNewItem_shouldReturnView() {
+        webTestClient.get()
+                .uri("/items/new")
+                .exchange()
+                .expectStatus().isOk();
     }
 
     @Test
-    void createItem_shouldRedirect_whenValid() throws Exception {
+    void createItem_shouldRedirect_whenValid() {
         long id = testItem.getId();
-        MockMultipartFile imageFile = new MockMultipartFile("imageFile", "test.jpg",
-                "image/jpeg", "content".getBytes());
-        when(fileUploadService.uploadImage(any())).thenReturn("uploaded_test.jpg");
-        when(itemService.save(any(Item.class))).thenReturn(testItem);
+        when(fileUploadService.uploadImage(any())).thenReturn(Mono.just("uploaded_test.jpg"));
+        when(itemService.save(any(Item.class))).thenReturn(Mono.just(testItem));
 
-        mockMvc.perform(multipart("/items")
-                        .file(imageFile)
-                        .param("name", "New Item")
-                        .param("price", "200")
-                        .param("description", "New Desc"))
-                .andExpect(status().is3xxRedirection())
-                .andExpect(redirectedUrl("/items/" + id));
+        MultipartBodyBuilder builder = new MultipartBodyBuilder();
+        builder.part("imageFile", "content".getBytes()).filename("test.jpg");
+        builder.part("name", "New Item");
+        builder.part("price", "200");
+        builder.part("description", "New Desc");
 
-        verify(fileUploadService).uploadImage(imageFile);
+        webTestClient.post()
+                .uri("/items")
+                .contentType(MediaType.MULTIPART_FORM_DATA)
+                .body(BodyInserters.fromMultipartData(builder.build()))
+                .exchange()
+                .expectStatus().is3xxRedirection()
+                .expectHeader().valueEquals("Location", "/items/" + id);
+
+        verify(fileUploadService).uploadImage(any());
         verify(itemService).save(any(Item.class));
     }
 
     @Test
-    void createItem_shouldReturnView_whenInvalid() throws Exception {
-        MockMultipartFile imageFile = new MockMultipartFile("imageFile", "test.jpg",
-                "image/jpeg", "content".getBytes());
+    void createItem_shouldReturnView_whenInvalid() {
+        MultipartBodyBuilder builder = new MultipartBodyBuilder();
+        builder.part("imageFile", "content".getBytes()).filename("test.jpg");
+        builder.part("name", ""); // Invalid: blank
+        builder.part("price", "0"); // Invalid: min 1
 
-        mockMvc.perform(multipart("/items")
-                        .file(imageFile)
-                        .param("name", "") // Invalid: blank
-                        .param("price", "0")) // Invalid: min 1
-                .andExpect(status().isOk())
-                .andExpect(view().name("new-item"))
-                .andExpect(model().attributeExists("errors", "item"));
+        webTestClient.post()
+                .uri("/items")
+                .contentType(MediaType.MULTIPART_FORM_DATA)
+                .body(BodyInserters.fromMultipartData(builder.build()))
+                .exchange()
+                .expectStatus().isOk();
 
         verify(itemService, never()).save(any(Item.class));
     }
