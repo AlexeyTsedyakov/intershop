@@ -2,7 +2,7 @@
 
 Простой интернет-магазин. Можно добавлять товары в корзину и оформлять заказ, добавлять новые товары
 
-Java, Spring Boot, Spring Web MVC, Thymeleaf, Spring Data JPA, Liquibase, Docker
+Java, Spring Boot, Spring WebFlux, Thymeleaf, Spring Data R2DBC, Liquibase, Docker
 
 ## Требования
 
