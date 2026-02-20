@@ -1,5 +1,6 @@
 rootProject.name = "intershop"
 
 include(
-    ":mvc-app"
+    ":mvc-app",
+    ":payment-service"
 )
