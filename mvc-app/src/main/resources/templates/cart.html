@@ -46,8 +46,14 @@
 
     <div class="checkout-panel">
         <p th:text="'Итого: ' + ${totalAmount} + ' рублей'"></p>
+        <p th:if="${balance != null}" th:text="'Баланс: ' + ${balance} + ' рублей'"></p>
         <form th:if="${totalAmount > 0}" method="post" th:action="@{/orders}">
-            <button type="submit">Заказать</button>
+            <button type="submit"
+                    th:disabled="${balance == null or (balance != null and totalAmount > balance)}">
+                Заказать
+            </button>
+            <span class="error" th:if="${balance == null}">Не удалось получить баланс</span>
+            <span class="error" th:if="${balance != null and totalAmount > balance}">Недостаточно средств</span>
         </form>
     </div>
 </main>

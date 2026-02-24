@@ -1,9 +1,10 @@
 package org.intershop.mvc.cart.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.intershop.mvc.cart.model.Cart;
 import org.intershop.mvc.cart.service.CartService;
 import org.intershop.mvc.cart.service.CartSessionService;
-import org.intershop.mvc.cart.model.Cart;
+import org.intershop.mvc.payment.service.BalanceService;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
@@ -17,16 +18,21 @@ import reactor.core.publisher.Mono;
 public class CartController {
     private final CartService cartService;
     private final CartSessionService cartSessionService;
+    private final BalanceService balanceService;
 
     @GetMapping
     public Mono<Rendering> showCart(WebSession session) {
         Cart cart = cartSessionService.getCart(session);
 
         return cartService.fetchItems(cart)
-                .then(cartService.getTotalAmount(cart))
-                .map(totalAmount -> Rendering.view("cart")
+                .then(Mono.zip(
+                        cartService.getTotalAmount(cart),
+                        balanceService.getBalance()
+                ))
+                .map(tuple -> Rendering.view("cart")
                         .modelAttribute("cart", cart)
-                        .modelAttribute("totalAmount", totalAmount)
+                        .modelAttribute("totalAmount", tuple.getT1())
+                        .modelAttribute("balance", tuple.getT2().orElse(null))
                         .build());
     }
 
