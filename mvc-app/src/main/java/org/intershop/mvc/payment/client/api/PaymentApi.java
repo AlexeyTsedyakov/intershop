@@ -1,25 +1,21 @@
 package org.intershop.mvc.payment.client.api;
 
 import org.intershop.mvc.payment.client.ApiClient;
-
 import org.intershop.mvc.payment.model.BaseResponse;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
+import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.reactive.function.client.WebClient.ResponseSpec;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+@Component
 @jakarta.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2026-02-20T17:27:04.637974100+03:00[Europe/Moscow]", comments = "Generator version: 7.20.0")
 public class PaymentApi {
     private ApiClient apiClient;
@@ -42,7 +38,7 @@ public class PaymentApi {
 
     /**
      * Проведение оплаты (списание с баланса)
-     * 
+     *
      * <p><b>200</b> - Стандартный ответ
      * <p><b>400</b> - Стандартный ответ
      * <p><b>500</b> - Стандартный ответ
@@ -64,11 +60,11 @@ public class PaymentApi {
         final MultiValueMap<String, String> cookieParams = new LinkedMultiValueMap<String, String>();
         final MultiValueMap<String, Object> formParams = new LinkedMultiValueMap<String, Object>();
 
-        final String[] localVarAccepts = { 
+        final String[] localVarAccepts = {
             "application/json"
         };
         final List<MediaType> localVarAccept = apiClient.selectHeaderAccept(localVarAccepts);
-        final String[] localVarContentTypes = { 
+        final String[] localVarContentTypes = {
             "application/json"
         };
         final MediaType localVarContentType = apiClient.selectHeaderContentType(localVarContentTypes);
@@ -81,7 +77,7 @@ public class PaymentApi {
 
     /**
      * Проведение оплаты (списание с баланса)
-     * 
+     *
      * <p><b>200</b> - Стандартный ответ
      * <p><b>400</b> - Стандартный ответ
      * <p><b>500</b> - Стандартный ответ
@@ -96,7 +92,7 @@ public class PaymentApi {
 
     /**
      * Проведение оплаты (списание с баланса)
-     * 
+     *
      * <p><b>200</b> - Стандартный ответ
      * <p><b>400</b> - Стандартный ответ
      * <p><b>500</b> - Стандартный ответ
@@ -111,7 +107,7 @@ public class PaymentApi {
 
     /**
      * Проведение оплаты (списание с баланса)
-     * 
+     *
      * <p><b>200</b> - Стандартный ответ
      * <p><b>400</b> - Стандартный ответ
      * <p><b>500</b> - Стандартный ответ

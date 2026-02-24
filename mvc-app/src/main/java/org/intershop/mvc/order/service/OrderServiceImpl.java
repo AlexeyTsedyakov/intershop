@@ -6,6 +6,7 @@ import org.intershop.mvc.cart.model.CartItem;
 import org.intershop.mvc.order.model.Order;
 import org.intershop.mvc.order.model.OrderItem;
 import org.intershop.mvc.order.repository.OrderRepository;
+import org.intershop.mvc.payment.service.PaymentService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Flux;
@@ -19,6 +20,7 @@ import java.util.List;
 public class OrderServiceImpl implements OrderService {
     private final OrderRepository orderRepository;
     private final OrderItemService orderItemService;
+    private final PaymentService paymentService;
 
     @Override
     @Transactional(readOnly = true)
@@ -66,7 +68,8 @@ public class OrderServiceImpl implements OrderService {
         Order order = createOrder(cart);
         List<OrderItem> items = convertCartItemsToOrderItems(cart.getItems());
 
-        return orderRepository.save(order)
+        return paymentService.processPayment(order.getTotalAmount())
+                .then(orderRepository.save(order))
                 .doOnNext(savedOrder -> items.forEach(savedOrder::addItem))
                 .flatMap(savedOrder -> orderItemService.saveAll(savedOrder.getItems())
                         .collectList()
