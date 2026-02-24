@@ -8,7 +8,7 @@ plugins {
 subprojects {
     apply(plugin = "java")
 
-    group = "org.example"
+    group = "org.intershop"
     version = "2.0"
 
     repositories {

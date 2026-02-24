@@ -48,9 +48,9 @@ openApiGenerate {
     generatorName.set("java")
     inputSpec.set("$projectDir/src/main/resources/openapi.yaml")
     outputDir.set("${layout.buildDirectory.get()}/generated/openapi")
-    invokerPackage.set("org.example.intershop.client")
-    apiPackage.set("org.example.intershop.client.api")
-    modelPackage.set("org.example.intershop.model")
+    invokerPackage.set("org.intershop.mvc.client")
+    apiPackage.set("org.intershop.mvc.client.api")
+    modelPackage.set("org.intershop.mvc.model")
     configOptions.set(
         mapOf(
             "library" to "webclient",
