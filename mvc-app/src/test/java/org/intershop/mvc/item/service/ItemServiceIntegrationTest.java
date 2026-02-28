@@ -2,30 +2,36 @@ package org.intershop.mvc.item.service;
 
 import org.intershop.mvc.item.model.Item;
 import org.intershop.mvc.item.repository.ItemRepository;
-import org.intershop.mvc.order.repository.OrderItemRepository;
 import org.intershop.mvc.item.repository.criteria.ItemCriteria;
+import org.intershop.mvc.order.repository.OrderItemRepository;
+import org.intershop.mvc.shared.config.EmbeddedRedisConfig;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.relational.core.query.Criteria;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import reactor.test.StepVerifier;
 
 import java.util.List;
 import java.util.NoSuchElementException;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 @SpringBootTest
+@Import(EmbeddedRedisConfig.class)
 @ActiveProfiles("test")
 public class ItemServiceIntegrationTest {
     @Autowired
     private ItemService itemService;
 
-    @Autowired
+    @MockitoSpyBean
     private ItemRepository itemRepository;
 
     @Autowired
@@ -93,6 +99,23 @@ public class ItemServiceIntegrationTest {
     }
 
     @Test
+    void findById_shouldReturnCachedItem_onRepeatedCall() {
+        long id = savedItem.getId();
+
+        itemService.findById(id)
+                .as(StepVerifier::create)
+                .expectNext(savedItem)
+                .verifyComplete();
+
+        itemService.findById(id)
+                .as(StepVerifier::create)
+                .expectNext(savedItem)
+                .verifyComplete();
+
+        verify(itemRepository, times(1)).findById(id);
+    }
+
+    @Test
     void findAll_shouldReturnList() {
         itemService.findAll()
                 .collectList()
@@ -119,6 +142,30 @@ public class ItemServiceIntegrationTest {
     }
 
     @Test
+    void findAll_shouldReturnCachedPage_onRepeatedCall() {
+        Pageable pageable = PageRequest.of(0, 1);
+        Criteria criteria = ItemCriteria.nameContains(savedItem.getName());
+
+        itemService.findAll(criteria, pageable)
+                .as(StepVerifier::create)
+                .assertNext(page -> {
+                    assertThat(page).isNotEmpty();
+                    assertThat(page).contains(savedItem);
+                })
+                .verifyComplete();
+
+        itemService.findAll(criteria, pageable)
+                .as(StepVerifier::create)
+                .assertNext(page -> {
+                    assertThat(page).isNotEmpty();
+                    assertThat(page).contains(savedItem);
+                })
+                .verifyComplete();
+
+        verify(itemRepository, times(1)).findAll(criteria, pageable);
+    }
+
+    @Test
     void findAllByIds_shouldReturnList() {
         itemService.findAllByIds(List.of(savedItem.getId()))
                 .collectList()
@@ -131,7 +178,7 @@ public class ItemServiceIntegrationTest {
     }
 
     @Test
-    void findAllByIdAsMap_shouldReturnMap() {
+    void findAllByIdsAsMap_shouldReturnMap() {
         long id = savedItem.getId();
 
         itemService.findAllByIdsAsMap(List.of(id))
@@ -141,5 +188,29 @@ public class ItemServiceIntegrationTest {
                     assertThat(itemsById).containsKey(id);
                 })
                 .verifyComplete();
+    }
+
+    @Test
+    void findAllByIdsAsMap_shouldReturnCachedMap_onRepeatedCall() {
+        long id = savedItem.getId();
+        List<Long> ids = List.of(id);
+
+        itemService.findAllByIdsAsMap(ids)
+                .as(StepVerifier::create)
+                .assertNext(itemsById -> {
+                    assertThat(itemsById).isNotEmpty();
+                    assertThat(itemsById).containsKey(id);
+                })
+                .verifyComplete();
+
+        itemService.findAllByIdsAsMap(ids)
+                .as(StepVerifier::create)
+                .assertNext(itemsById -> {
+                    assertThat(itemsById).isNotEmpty();
+                    assertThat(itemsById).containsKey(id);
+                })
+                .verifyComplete();
+
+        verify(itemRepository, times(1)).findAllById(ids);
     }
 }

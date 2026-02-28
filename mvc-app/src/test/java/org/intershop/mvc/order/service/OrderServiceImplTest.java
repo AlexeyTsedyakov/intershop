@@ -6,6 +6,7 @@ import org.intershop.mvc.item.model.Item;
 import org.intershop.mvc.order.model.Order;
 import org.intershop.mvc.order.model.OrderItem;
 import org.intershop.mvc.order.repository.OrderRepository;
+import org.intershop.mvc.payment.service.PaymentService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +21,7 @@ import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -27,10 +29,10 @@ import static org.mockito.Mockito.when;
 public class OrderServiceImplTest {
     @MockitoBean
     private OrderRepository orderRepository;
-
     @MockitoBean
     private OrderItemService orderItemService;
-
+    @MockitoBean
+    private PaymentService paymentService;
     @Autowired
     private OrderServiceImpl orderService;
 
@@ -100,6 +102,7 @@ public class OrderServiceImplTest {
         addToCart(cart, item2, 1);
         long expectedTotal = cart.calculateTotalAmount();
 
+        when(paymentService.processPayment(anyLong())).thenReturn(Mono.empty());
         when(orderRepository.save(any(Order.class))).thenAnswer(invocation -> {
             Order o = invocation.getArgument(0);
             o.setId(1L);
@@ -121,6 +124,7 @@ public class OrderServiceImplTest {
                 })
                 .verifyComplete();
 
+        verify(paymentService).processPayment(expectedTotal);
         verify(orderRepository).save(any(Order.class));
         verify(orderItemService).saveAll(any());
         assertThat(cart.getItems()).isEmpty();
@@ -130,6 +134,7 @@ public class OrderServiceImplTest {
     void placeOrder_withEmptyCart_shouldCreateAndSaveOrder_withZeroTotalAmount() {
         Cart cart = new Cart();
 
+        when(paymentService.processPayment(anyLong())).thenReturn(Mono.empty());
         when(orderRepository.save(any(Order.class))).thenAnswer(invocation -> {
             Order o = invocation.getArgument(0);
             return Mono.just(o);
@@ -145,6 +150,7 @@ public class OrderServiceImplTest {
                 })
                 .verifyComplete();
 
+        verify(paymentService).processPayment(0L);
         verify(orderRepository).save(any(Order.class));
     }
 

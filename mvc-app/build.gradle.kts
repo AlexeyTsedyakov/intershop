@@ -7,6 +7,8 @@ plugins {
 
 description = "mvc-app"
 
+val mockitoAgent by configurations.creating
+
 configurations {
     compileOnly {
         extendsFrom(configurations.annotationProcessor.get())
@@ -20,6 +22,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-thymeleaf")
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.boot:spring-boot-starter-webflux")
+    implementation("org.springframework.boot:spring-boot-starter-data-redis")
     implementation("org.springframework:spring-jdbc")
     implementation("com.fasterxml.jackson.core:jackson-databind:2.21.1")
     implementation("com.fasterxml.jackson.core:jackson-core:2.21.1")
@@ -41,7 +44,10 @@ dependencies {
     testImplementation("org.springframework.boot:spring-boot-starter-thymeleaf-test")
     testImplementation("org.springframework.boot:spring-boot-starter-validation-test")
     testImplementation("org.springframework.boot:spring-boot-starter-webflux-test")
+    testImplementation("com.github.codemonstur:embedded-redis:1.4.3")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+
+    mockitoAgent("org.mockito:mockito-core") { isTransitive = false }
 }
 
 openApiGenerate {
@@ -64,6 +70,9 @@ openApiGenerate {
 
 tasks.withType<Test> {
     useJUnitPlatform()
+    doFirst {
+        jvmArgs("-javaagent:${mockitoAgent.singleFile.absolutePath}")
+    }
 }
 
 tasks.jar {

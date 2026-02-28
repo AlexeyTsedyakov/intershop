@@ -1,34 +1,40 @@
 package org.intershop.mvc.order.service;
 
-import org.intershop.mvc.cart.service.CartService;
-import org.intershop.mvc.item.service.ItemService;
 import org.intershop.mvc.cart.model.Cart;
+import org.intershop.mvc.cart.service.CartService;
 import org.intershop.mvc.item.model.Item;
+import org.intershop.mvc.item.service.ItemService;
 import org.intershop.mvc.order.model.Order;
+import org.intershop.mvc.payment.service.PaymentService;
+import org.intershop.mvc.shared.config.EmbeddedRedisConfig;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 @SpringBootTest
+@Import(EmbeddedRedisConfig.class)
 @ActiveProfiles("test")
 public class OrderServiceIntegrationTest {
-
     @Autowired
     private OrderService orderService;
-
     @Autowired
     private ItemService itemService;
-
     @Autowired
     private CartService cartService;
+    @MockitoSpyBean
+    private PaymentService paymentService;
 
     private Item item1;
     private Item item2;
@@ -46,12 +52,13 @@ public class OrderServiceIntegrationTest {
         cart.increaseQuantity(item1.getId()); // 2 * item1
         cart.increaseQuantity(item2.getId()); // 1 * item2
 
-        StepVerifier.create(cartService.fetchItems(cart)
-                        .then(orderService.placeOrder(cart)))
-                .assertNext(order -> {
-                    long expectedTotal = order.calculateTotalAmount();
-                    int expectedSize = order.getItems().size();
+        StepVerifier.create(cartService.fetchItems(cart))
+                        .verifyComplete();
+        long expectedTotal = cart.calculateTotalAmount();
+        int expectedSize = cart.getItems().size();
 
+        StepVerifier.create(orderService.placeOrder(cart))
+                .assertNext(order -> {
                     assertThat(order).isNotNull();
                     assertThat(order.getId()).isNotNull();
                     assertThat(order.getTotalAmount()).isEqualTo(expectedTotal);
@@ -59,6 +66,8 @@ public class OrderServiceIntegrationTest {
                     assertThat(cart.getItems()).isEmpty();
                 })
                 .verifyComplete();
+
+        verify(paymentService, times(1)).processPayment(expectedTotal);
     }
 
     @Test

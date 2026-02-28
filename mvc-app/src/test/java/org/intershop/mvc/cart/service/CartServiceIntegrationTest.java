@@ -4,10 +4,12 @@ import org.intershop.mvc.item.service.ItemService;
 import org.intershop.mvc.cart.model.Cart;
 import org.intershop.mvc.cart.model.CartItem;
 import org.intershop.mvc.item.model.Item;
+import org.intershop.mvc.shared.config.EmbeddedRedisConfig;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 import reactor.test.StepVerifier;
 
@@ -16,6 +18,7 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
+@Import(EmbeddedRedisConfig.class)
 @ActiveProfiles("test")
 public class CartServiceIntegrationTest {
 

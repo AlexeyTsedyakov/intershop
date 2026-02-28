@@ -3,6 +3,7 @@ package org.intershop.mvc.cart.controller;
 import org.intershop.mvc.cart.model.Cart;
 import org.intershop.mvc.cart.service.CartService;
 import org.intershop.mvc.cart.service.CartSessionService;
+import org.intershop.mvc.payment.service.BalanceService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webflux.test.autoconfigure.WebFluxTest;
@@ -11,6 +12,8 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import reactor.core.publisher.Mono;
 
+import java.util.Optional;
+
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -18,22 +21,23 @@ import static org.mockito.Mockito.*;
 public class CartControllerTest {
     @Autowired
     private WebTestClient webTestClient;
-
     @MockitoBean
     private Cart cart;
-
     @MockitoBean
     private CartService cartService;
-
     @MockitoBean
     private CartSessionService cartSessionService;
+    @MockitoBean
+    private BalanceService balanceService;
 
     @Test
     void showCart_shouldReturnView() {
         long totalAmount = 155L;
+        long balance = 600L;
         when(cartSessionService.getCart(any())).thenReturn(cart);
         when(cartService.fetchItems(any(Cart.class))).thenReturn(Mono.empty());
         when(cartService.getTotalAmount(any(Cart.class))).thenReturn(Mono.just(totalAmount));
+        when(balanceService.getBalance()).thenReturn(Mono.just(Optional.of(balance)));
 
         webTestClient.get().uri("/cart")
                 .exchange()
@@ -41,6 +45,7 @@ public class CartControllerTest {
 
         verify(cartService, times(1)).fetchItems(any(Cart.class));
         verify(cartService, times(1)).getTotalAmount(any(Cart.class));
+        verify(balanceService, times(1)).getBalance();
     }
 
     @Test
