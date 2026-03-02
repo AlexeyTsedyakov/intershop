@@ -1,5 +1,7 @@
 package org.intershop.mvc.cart.model;
 
+import org.intershop.mvc.item.model.Item;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -21,6 +23,16 @@ public class Cart {
     public int getQuantity(Long itemId) {
         Optional<CartItem> cartItem = findCartItem(itemId);
         return cartItem.map(CartItem::getQuantity).orElse(0);
+    }
+
+    public void increaseQuantity(Item item) {
+        CartItem cartItem = findCartItem(item.getId()).orElseGet(() -> {
+            var newItem = new CartItem(item, 0, item.getPrice());
+            cartItems.add(newItem);
+            return newItem;
+        });
+
+        cartItem.setQuantity(cartItem.getQuantity() + 1);
     }
 
     public void increaseQuantity(Long itemId) {

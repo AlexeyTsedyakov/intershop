@@ -15,4 +15,11 @@ public class CartItem {
         this.quantity = quantity;
         this.price = price;
     }
+
+    public CartItem(Item item, int quantity, int price) {
+        this.itemId = item.getId();
+        this.quantity = quantity;
+        this.price = price;
+        this.item = item;
+    }
 }

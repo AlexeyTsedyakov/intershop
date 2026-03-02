@@ -2,7 +2,7 @@ package org.intershop.mvc.order.service;
 
 import lombok.RequiredArgsConstructor;
 import org.intershop.mvc.cart.model.Cart;
-import org.intershop.mvc.cart.model.CartItem;
+import org.intershop.mvc.order.factory.OrderFactory;
 import org.intershop.mvc.order.model.Order;
 import org.intershop.mvc.order.model.OrderItem;
 import org.intershop.mvc.order.repository.OrderRepository;
@@ -21,6 +21,7 @@ public class OrderServiceImpl implements OrderService {
     private final OrderRepository orderRepository;
     private final OrderItemService orderItemService;
     private final PaymentService paymentService;
+    private final OrderFactory orderFactory;
 
     @Override
     @Transactional(readOnly = true)
@@ -65,29 +66,15 @@ public class OrderServiceImpl implements OrderService {
     @Override
     @Transactional
     public Mono<Order> placeOrder(Cart cart) {
-        Order order = createOrder(cart);
-        List<OrderItem> items = convertCartItemsToOrderItems(cart.getItems());
+        Order order = orderFactory.createFromCart(cart);
 
         return paymentService.processPayment(order.getTotalAmount())
                 .then(orderRepository.save(order))
-                .doOnNext(savedOrder -> items.forEach(savedOrder::addItem))
+                .doOnNext(savedOrder -> savedOrder.getItems()
+                        .forEach(item -> item.setOrderId(savedOrder.getId())))
                 .flatMap(savedOrder -> orderItemService.saveAll(savedOrder.getItems())
-                        .collectList()
-                        .thenReturn(savedOrder))
+                        .then(Mono.just(savedOrder)))
                 .doOnSuccess(savedOrder -> cart.clearCart());
-    }
-
-    private Order createOrder(Cart cart) {
-        Order order = new Order();
-        order.setTotalAmount(cart.calculateTotalAmount());
-
-        return order;
-    }
-
-    private List<OrderItem> convertCartItemsToOrderItems(List<CartItem> cartItems) {
-        return cartItems.stream()
-                .map(cartItem -> new OrderItem(cartItem.getItem(), cartItem.getQuantity(), cartItem.getPrice()))
-                .toList();
     }
 
     @Override
