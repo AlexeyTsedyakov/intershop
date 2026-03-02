@@ -64,7 +64,7 @@ openApiGenerate {
             "openApiNullable" to "false",
             "useJakartaEe" to "true",
             "documentationProvider" to "none"
-            )
+        )
     )
 }
 
@@ -72,6 +72,25 @@ tasks.withType<Test> {
     useJUnitPlatform()
     doFirst {
         jvmArgs("-javaagent:${mockitoAgent.singleFile.absolutePath}")
+    }
+}
+
+// Unit tests
+tasks.named<Test>("test") {
+    filter {
+        excludeTestsMatching("*IntegrationTest")
+    }
+}
+
+// Integration tests
+val integrationTest by tasks.registering(Test::class) {
+    description = "Runs integration tests."
+    group = LifecycleBasePlugin.VERIFICATION_GROUP
+    testClassesDirs = sourceSets.test.get().output.classesDirs
+    classpath = sourceSets.test.get().runtimeClasspath
+
+    filter {
+        includeTestsMatching("*IntegrationTest")
     }
 }
 
