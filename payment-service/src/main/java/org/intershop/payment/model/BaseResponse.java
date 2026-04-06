@@ -1,26 +1,19 @@
 package org.intershop.payment.model;
 
-import java.net.URI;
-import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonTypeName;
-import org.springframework.lang.Nullable;
-import java.time.OffsetDateTime;
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.*;
 import io.swagger.v3.oas.annotations.media.Schema;
-
-
-import java.util.*;
 import jakarta.annotation.Generated;
+import org.springframework.lang.Nullable;
+
+import java.util.Objects;
 
 /**
  * BaseResponse
  */
 
 @JsonTypeName("baseResponse")
-@Generated(value = "org.openapitools.codegen.languages.SpringCodegen", date = "2026-02-20T11:37:55.110893400+03:00[Europe/Moscow]", comments = "Generator version: 7.20.0")
+@Generated(value = "org.openapitools.codegen.languages.SpringCodegen", date = "2026-04-06T17:16:22.022873700+03:00[Europe/Moscow]", comments = "Generator version: 7.21.0")
 public class BaseResponse {
 
   private @Nullable Boolean ok;
@@ -43,6 +36,7 @@ public class BaseResponse {
     return ok;
   }
 
+  @JsonProperty("ok")
   public void setOk(@Nullable Boolean ok) {
     this.ok = ok;
   }
@@ -63,6 +57,7 @@ public class BaseResponse {
     return description;
   }
 
+  @JsonProperty("description")
   public void setDescription(@Nullable String description) {
     this.description = description;
   }
@@ -100,10 +95,7 @@ public class BaseResponse {
    * (except the first line).
    */
   private String toIndentedString(@Nullable Object o) {
-    if (o == null) {
-      return "null";
-    }
-    return o.toString().replace("\n", "\n    ");
+    return o == null ? "null" : o.toString().replace("\n", "\n    ");
   }
 }
 
