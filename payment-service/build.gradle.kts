@@ -15,7 +15,7 @@ configurations {
 
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter-webflux")
-    implementation("org.springdoc:springdoc-openapi-starter-webflux-ui:3.0.1")
+    implementation("org.springdoc:springdoc-openapi-starter-webflux-ui:3.0.2")
     compileOnly("org.projectlombok:lombok")
     annotationProcessor("org.projectlombok:lombok")
     testImplementation("org.springframework.boot:spring-boot-starter-webflux-test")
