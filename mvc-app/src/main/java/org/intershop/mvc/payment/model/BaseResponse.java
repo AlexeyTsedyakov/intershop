@@ -13,12 +13,15 @@
 
 package org.intershop.mvc.payment.model;
 
+import java.util.Objects;
+import java.util.Arrays;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonTypeName;
+import com.fasterxml.jackson.annotation.JsonValue;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.annotation.JsonTypeName;
-
-import java.util.Objects;
 
 /**
  * BaseResponse
@@ -28,7 +31,7 @@ import java.util.Objects;
   BaseResponse.JSON_PROPERTY_DESCRIPTION
 })
 @JsonTypeName("baseResponse")
-@jakarta.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2026-02-20T17:27:04.637974100+03:00[Europe/Moscow]", comments = "Generator version: 7.20.0")
+@jakarta.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2026-04-06T16:58:24.114138500+03:00[Europe/Moscow]", comments = "Generator version: 7.21.0")
 public class BaseResponse {
   public static final String JSON_PROPERTY_OK = "ok";
   @jakarta.annotation.Nullable
@@ -125,10 +128,7 @@ public class BaseResponse {
    * (except the first line).
    */
   private String toIndentedString(Object o) {
-    if (o == null) {
-      return "null";
-    }
-    return o.toString().replace("\n", "\n    ");
+    return o == null ? "null" : o.toString().replace("\n", "\n    ");
   }
 
 }

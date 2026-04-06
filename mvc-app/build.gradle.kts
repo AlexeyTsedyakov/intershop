@@ -24,10 +24,6 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-webflux")
     implementation("org.springframework.boot:spring-boot-starter-data-redis")
     implementation("org.springframework:spring-jdbc")
-    implementation("com.fasterxml.jackson.core:jackson-databind:2.21.1")
-    implementation("com.fasterxml.jackson.core:jackson-core:2.21.1")
-    implementation("com.fasterxml.jackson.core:jackson-annotations:2.21")
-    implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.21.1")
 
     compileOnly("org.projectlombok:lombok")
     annotationProcessor("org.projectlombok:lombok")
@@ -63,8 +59,10 @@ openApiGenerate {
             "reactive" to "true",
             "openApiNullable" to "false",
             "useJakartaEe" to "true",
-            "documentationProvider" to "none"
-        )
+            "documentationProvider" to "none",
+            "useSpringBoot4" to "true",
+            "useJackson3" to "true",
+            )
     )
 }
 

@@ -14,7 +14,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@jakarta.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2026-02-20T17:27:04.637974100+03:00[Europe/Moscow]", comments = "Generator version: 7.20.0")
+@jakarta.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2026-04-06T16:58:24.114138500+03:00[Europe/Moscow]", comments = "Generator version: 7.21.0")
 public class PaymentApi {
     private ApiClient apiClient;
 
@@ -36,7 +36,7 @@ public class PaymentApi {
 
     /**
      * Проведение оплаты (списание с баланса)
-     *
+     * 
      * <p><b>200</b> - Стандартный ответ
      * <p><b>400</b> - Стандартный ответ
      * <p><b>500</b> - Стандартный ответ
@@ -58,11 +58,11 @@ public class PaymentApi {
         final MultiValueMap<String, String> cookieParams = new LinkedMultiValueMap<String, String>();
         final MultiValueMap<String, Object> formParams = new LinkedMultiValueMap<String, Object>();
 
-        final String[] localVarAccepts = {
+        final String[] localVarAccepts = { 
             "application/json"
         };
         final List<MediaType> localVarAccept = apiClient.selectHeaderAccept(localVarAccepts);
-        final String[] localVarContentTypes = {
+        final String[] localVarContentTypes = { 
             "application/json"
         };
         final MediaType localVarContentType = apiClient.selectHeaderContentType(localVarContentTypes);
@@ -75,7 +75,7 @@ public class PaymentApi {
 
     /**
      * Проведение оплаты (списание с баланса)
-     *
+     * 
      * <p><b>200</b> - Стандартный ответ
      * <p><b>400</b> - Стандартный ответ
      * <p><b>500</b> - Стандартный ответ
@@ -90,7 +90,7 @@ public class PaymentApi {
 
     /**
      * Проведение оплаты (списание с баланса)
-     *
+     * 
      * <p><b>200</b> - Стандартный ответ
      * <p><b>400</b> - Стандартный ответ
      * <p><b>500</b> - Стандартный ответ
@@ -105,7 +105,7 @@ public class PaymentApi {
 
     /**
      * Проведение оплаты (списание с баланса)
-     *
+     * 
      * <p><b>200</b> - Стандартный ответ
      * <p><b>400</b> - Стандартный ответ
      * <p><b>500</b> - Стандартный ответ
