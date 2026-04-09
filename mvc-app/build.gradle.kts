@@ -86,6 +86,7 @@ val integrationTest by tasks.registering(Test::class) {
     group = LifecycleBasePlugin.VERIFICATION_GROUP
     testClassesDirs = sourceSets.test.get().output.classesDirs
     classpath = sourceSets.test.get().runtimeClasspath
+    outputs.upToDateWhen { false }
 
     filter {
         includeTestsMatching("*IntegrationTest")
