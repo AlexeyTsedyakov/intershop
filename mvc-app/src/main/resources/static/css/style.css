@@ -73,7 +73,7 @@
     margin-top: 30px;
 }
 
-.new-item-form {
+.new-item-form, .user-registration-form {
     display: flex;
     flex-direction: column;
     gap: 10px;

@@ -5,7 +5,6 @@ import org.intershop.mvc.cart.model.Cart;
 import org.intershop.mvc.cart.service.CartService;
 import org.intershop.mvc.cart.service.CartSessionService;
 import org.intershop.mvc.payment.service.BalanceService;
-import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.reactive.result.view.Rendering;
@@ -37,46 +36,42 @@ public class CartController {
     }
 
     @PostMapping("/increase/{id}")
-    public Mono<Rendering> add(@PathVariable Long id, @RequestHeader(value = HttpHeaders.REFERER) String referer,
-                               WebSession session) {
+    public Mono<Rendering> add(@PathVariable Long id, @RequestParam String redirectUrl, WebSession session) {
         Cart cart = cartSessionService.getCart(session);
 
         return Mono.fromRunnable(() -> cart.increaseQuantity(id))
-                .then(redirectToReferer(referer));
+                .then(redirect(redirectUrl));
     }
 
     @PostMapping("/decrease/{id}")
-    public Mono<Rendering> decrease(@PathVariable Long id, @RequestHeader(value = HttpHeaders.REFERER) String referer,
-                                    WebSession session) {
+    public Mono<Rendering> decrease(@PathVariable Long id, @RequestParam String redirectUrl, WebSession session) {
         Cart cart = cartSessionService.getCart(session);
 
         return Mono.fromRunnable(() -> cart.decreaseQuantity(id))
-                .then(redirectToReferer(referer));
+                .then(redirect(redirectUrl));
     }
 
     @PostMapping("/remove/{id}")
-    public Mono<Rendering> remove(@PathVariable Long id, @RequestHeader(value = HttpHeaders.REFERER) String referer,
-                                  WebSession session) {
+    public Mono<Rendering> remove(@PathVariable Long id, @RequestParam String redirectUrl, WebSession session) {
         Cart cart = cartSessionService.getCart(session);
 
         return Mono.fromRunnable(() -> cart.removeItem(id))
-                .then(redirectToReferer(referer));
+                .then(redirect(redirectUrl));
     }
 
     @PostMapping("/clear")
-    public Mono<Rendering> clear(@RequestHeader(value = HttpHeaders.REFERER) String referer, WebSession session) {
+    public Mono<Rendering> clear(@RequestParam String redirectUrl, WebSession session) {
         Cart cart = cartSessionService.getCart(session);
 
         return Mono.fromRunnable(cart::clearCart)
-                .then(redirectToReferer(referer));
+                .then(redirect(redirectUrl));
     }
 
-    private Mono<Rendering> redirectToReferer(String referer) {
-        // Если заголовка нет, возвращаемся на главную витрину
-        if (referer == null || referer.isBlank()) {
+    private Mono<Rendering> redirect(String url) {
+        if (url == null || url.isBlank()) {
             return Mono.just(Rendering.redirectTo("/items").build());
         }
 
-        return Mono.just(Rendering.redirectTo(referer).build());
+        return Mono.just(Rendering.redirectTo(url).build());
     }
 }

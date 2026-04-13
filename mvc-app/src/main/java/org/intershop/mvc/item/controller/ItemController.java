@@ -13,6 +13,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.relational.core.query.Criteria;
 import org.springframework.http.codec.multipart.FilePart;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
@@ -31,6 +32,7 @@ public class ItemController {
 
     @GetMapping
     public Mono<Rendering> showItems(WebSession session,
+                                     Authentication authentication,
                                      @RequestParam(defaultValue = "0") int page,
                                      @RequestParam(defaultValue = "3") int size,
                                      @RequestParam(required = false) String sort,
@@ -38,6 +40,7 @@ public class ItemController {
         Pageable pageable = PageRequest.of(page, size, parseSort(sort));
         Criteria criteria = ItemCriteria.nameContains(search);
         Cart cart = cartSessionService.getCart(session);
+        boolean isAuthenticated = authentication != null && authentication.isAuthenticated();
 
         return itemService.findAll(criteria, pageable)
                 .map(itemPage -> Rendering.view("items")
@@ -48,6 +51,7 @@ public class ItemController {
                         .modelAttribute("sort", sort)
                         .modelAttribute("search", search)
                         .modelAttribute("cart", cart)
+                        .modelAttribute("isAuthenticated", isAuthenticated)
                         .build()
                 );
     }

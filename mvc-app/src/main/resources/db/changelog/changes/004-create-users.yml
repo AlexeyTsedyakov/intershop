@@ -1,0 +1,25 @@
+databaseChangeLog:
+  - changeSet:
+      id: 004-create-users
+      author: Alexey Tsedyakov
+      changes:
+        - createTable:
+            tableName: users
+            columns:
+              - column:
+                  name: id
+                  type: bigint
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+              - column:
+                  name: username
+                  type: varchar
+                  constraints:
+                    unique: true
+                    nullable: false
+              - column:
+                  name: password
+                  type: char(60)
+                  constraints:
+                    nullable: false

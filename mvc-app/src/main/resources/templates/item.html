@@ -25,15 +25,15 @@
         <p th:text="${item.description}">Описание</p>
         <p class="price" th:text="'Цена: ' + ${item.price}">Цена</p>
         <div class="cart-actions">
-            <form method="post" th:action="@{/cart/increase/{id} (id=${item.id})}">
+            <form method="post" th:action="@{/cart/increase/{id} (id=${item.id}, redirectUrl=${currentUrl})}">
                 <button type="submit" class="cart-button">+</button>
             </form>
             <span th:text="${cart.getQuantity(item.id)}"></span>
-            <form method="post" th:action="@{/cart/decrease/{id} (id=${item.id})}">
+            <form method="post" th:action="@{/cart/decrease/{id} (id=${item.id}, redirectUrl=${currentUrl})}">
                 <button type="submit" class="cart-button">-</button>
             </form>
             <form th:if="${cart.getQuantity(item.id) > 0}"
-                  method="post" th:action="@{/cart/remove/{id} (id=${item.id})}">
+                  method="post" th:action="@{/cart/remove/{id} (id=${item.id}, redirectUrl=${currentUrl})}">
                 <button type="submit">Удалить из корзины</button>
             </form>
         </div>

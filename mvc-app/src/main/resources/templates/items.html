@@ -15,6 +15,9 @@
             <li><a th:href="@{/cart}">Корзина</a></li>
             <li><a th:href="@{/orders}">Заказы</a></li>
             <li><a th:href="@{/items/new}">Добавить товар</a></li>
+            <li th:if="${!isAuthenticated}"><a th:href="@{/login}">Вход</a></li>
+            <li th:if="${!isAuthenticated}"><a th:href="@{/users/registration}">Регистрация</a></li>
+            <li th:if="${isAuthenticated}"><a th:href="@{/logout}">Выход</a></li>
         </ul>
     </nav>
 </header>
@@ -61,11 +64,11 @@
             <p th:text="${item.description}">Описание</p>
             <p class="price" th:text="'Цена: ' + ${item.price}">Цена</p>
             <div class="cart-actions">
-                <form method="post" th:action="@{/cart/increase/{id} (id=${item.id})}">
+                <form method="post" th:action="@{/cart/increase/{id} (id=${item.id}, redirectUrl=${currentUrl})}">
                     <button type="submit" class="cart-button">+</button>
                 </form>
                 <span th:text="${cart.getQuantity(item.id)}"></span>
-                <form method="post" th:action="@{/cart/decrease/{id} (id=${item.id})}">
+                <form method="post" th:action="@{/cart/decrease/{id} (id=${item.id}, redirectUrl=${currentUrl})}">
                     <button type="submit" class="cart-button">-</button>
                 </form>
             </div>
