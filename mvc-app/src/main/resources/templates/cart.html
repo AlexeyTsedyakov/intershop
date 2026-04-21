@@ -52,7 +52,7 @@
                     th:disabled="${balance == null or (balance != null and totalAmount > balance)}">
                 Заказать
             </button>
-            <span class="error" th:if="${balance == null}">Не удалось получить баланс</span>
+            <span class="error" th:if="${balanceError != null}" th:text="'Не удалось получить баланс: ' + ${balanceError}"></span>
             <span class="error" th:if="${balance != null and totalAmount > balance}">Недостаточно средств</span>
         </form>
     </div>

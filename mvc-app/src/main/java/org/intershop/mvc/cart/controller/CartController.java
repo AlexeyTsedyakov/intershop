@@ -31,7 +31,8 @@ public class CartController {
                 .map(tuple -> Rendering.view("cart")
                         .modelAttribute("cart", cart)
                         .modelAttribute("totalAmount", tuple.getT1())
-                        .modelAttribute("balance", tuple.getT2().orElse(null))
+                        .modelAttribute("balance", tuple.getT2().value())
+                        .modelAttribute("balanceError", tuple.getT2().errorMessage())
                         .build());
     }
 

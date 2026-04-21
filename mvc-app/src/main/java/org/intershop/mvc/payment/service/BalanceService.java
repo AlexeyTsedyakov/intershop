@@ -1,9 +1,8 @@
 package org.intershop.mvc.payment.service;
 
+import org.intershop.mvc.payment.model.BalanceResult;
 import reactor.core.publisher.Mono;
 
-import java.util.Optional;
-
 public interface BalanceService {
-    Mono<Optional<Long>> getBalance();
+    Mono<BalanceResult> getBalance();
 }
