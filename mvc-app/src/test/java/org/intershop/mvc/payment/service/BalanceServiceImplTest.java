@@ -25,19 +25,23 @@ class BalanceServiceImplTest {
         when(balanceApi.balanceGet()).thenReturn(Mono.just(balance));
 
         StepVerifier.create(balanceService.getBalance())
-                .assertNext(balanceOpt ->
-                        assertThat(balanceOpt).hasValue(balance))
+                .assertNext(balanceResult -> {
+                        assertThat(balanceResult.value()).isEqualTo(balance);
+                        assertThat(balanceResult.errorMessage()).isNull();
+                })
                 .verifyComplete();
         verify(balanceApi, times(1)).balanceGet();
     }
 
     @Test
     void getBalance_shouldReturnEmpty_whenPaymentServiceNotAvailable() {
-         when(balanceApi.balanceGet()).thenReturn(Mono.error(new RuntimeException()));
+         when(balanceApi.balanceGet()).thenReturn(Mono.error(new RuntimeException("Error")));
 
          StepVerifier.create(balanceService.getBalance())
-                 .assertNext(balanceOpt ->
-                         assertThat(balanceOpt).isEmpty())
+                 .assertNext(balanceResult -> {
+                         assertThat(balanceResult.value()).isNull();
+                         assertThat(balanceResult.errorMessage()).isNotEmpty();
+                 })
                  .verifyComplete();
          verify(balanceApi, times(1)).balanceGet();
     }

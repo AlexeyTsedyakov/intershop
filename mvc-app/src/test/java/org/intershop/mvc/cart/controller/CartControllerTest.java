@@ -3,21 +3,24 @@ package org.intershop.mvc.cart.controller;
 import org.intershop.mvc.cart.model.Cart;
 import org.intershop.mvc.cart.service.CartService;
 import org.intershop.mvc.cart.service.CartSessionService;
+import org.intershop.mvc.payment.model.BalanceResult;
 import org.intershop.mvc.payment.service.BalanceService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.security.oauth2.client.autoconfigure.reactive.ReactiveOAuth2ClientWebSecurityAutoConfiguration;
 import org.springframework.boot.webflux.test.autoconfigure.WebFluxTest;
 import org.springframework.http.HttpHeaders;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import reactor.core.publisher.Mono;
 
-import java.util.Optional;
-
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-@WebFluxTest(CartController.class)
+@WebFluxTest(
+        controllers = CartController.class,
+        excludeAutoConfiguration = ReactiveOAuth2ClientWebSecurityAutoConfiguration.class
+)
 public class CartControllerTest {
     @Autowired
     private WebTestClient webTestClient;
@@ -37,7 +40,7 @@ public class CartControllerTest {
         when(cartSessionService.getCart(any())).thenReturn(cart);
         when(cartService.fetchItems(any(Cart.class))).thenReturn(Mono.empty());
         when(cartService.getTotalAmount(any(Cart.class))).thenReturn(Mono.just(totalAmount));
-        when(balanceService.getBalance()).thenReturn(Mono.just(Optional.of(balance)));
+        when(balanceService.getBalance()).thenReturn(Mono.just(new BalanceResult(balance, null)));
 
         webTestClient.get().uri("/cart")
                 .exchange()
@@ -54,8 +57,7 @@ public class CartControllerTest {
         String refererUrl = "/items";
         when(cartSessionService.getCart(any())).thenReturn(cart);
 
-        webTestClient.post().uri("/cart/increase/" + id)
-                        .header(HttpHeaders.REFERER, refererUrl)
+        webTestClient.post().uri("/cart/increase/" + id + "?redirectUrl=" + refererUrl)
                 .exchange()
                 .expectStatus().is3xxRedirection()
                 .expectHeader().valueEquals(HttpHeaders.LOCATION, refererUrl);
@@ -69,8 +71,7 @@ public class CartControllerTest {
         String refererUrl = "/items";
         when(cartSessionService.getCart(any())).thenReturn(cart);
 
-        webTestClient.post().uri("/cart/decrease/" + id)
-                        .header(HttpHeaders.REFERER, refererUrl)
+        webTestClient.post().uri("/cart/decrease/" + id + "?redirectUrl=" + refererUrl)
                 .exchange()
                 .expectStatus().is3xxRedirection()
                 .expectHeader().valueEquals(HttpHeaders.LOCATION, refererUrl);
@@ -84,8 +85,7 @@ public class CartControllerTest {
         String refererUrl = "/items";
         when(cartSessionService.getCart(any())).thenReturn(cart);
 
-        webTestClient.post().uri("/cart/remove/" + id)
-                        .header(HttpHeaders.REFERER, refererUrl)
+        webTestClient.post().uri("/cart/remove/" + id + "?redirectUrl=" + refererUrl)
                 .exchange()
                 .expectStatus().is3xxRedirection()
                 .expectHeader().valueEquals(HttpHeaders.LOCATION, refererUrl);
@@ -98,8 +98,7 @@ public class CartControllerTest {
         String refererUrl = "/items";
         when(cartSessionService.getCart(any())).thenReturn(cart);
 
-        webTestClient.post().uri("/cart/clear")
-                        .header(HttpHeaders.REFERER, refererUrl)
+        webTestClient.post().uri("/cart/clear?redirectUrl=" + refererUrl)
                 .exchange()
                 .expectStatus().is3xxRedirection()
                 .expectHeader().valueEquals(HttpHeaders.LOCATION, refererUrl);

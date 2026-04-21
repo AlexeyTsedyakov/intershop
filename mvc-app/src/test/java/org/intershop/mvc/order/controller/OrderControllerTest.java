@@ -7,6 +7,7 @@ import org.intershop.mvc.order.service.OrderService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.security.oauth2.client.autoconfigure.reactive.ReactiveOAuth2ClientWebSecurityAutoConfiguration;
 import org.springframework.boot.webflux.test.autoconfigure.WebFluxTest;
 import org.springframework.http.HttpHeaders;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -19,7 +20,10 @@ import java.util.List;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-@WebFluxTest(OrderController.class)
+@WebFluxTest(
+        controllers = OrderController.class,
+        excludeAutoConfiguration = ReactiveOAuth2ClientWebSecurityAutoConfiguration.class
+)
 public class OrderControllerTest {
     @Autowired
     private WebTestClient webTestClient;

@@ -17,8 +17,8 @@ public class BalanceServiceIntegrationTest {
     @Test
     void getBalance_shouldReturnNonEmpty() {
         StepVerifier.create(balanceService.getBalance())
-                .assertNext(balanceOpt ->
-                        assertThat(balanceOpt).isNotEmpty())
+                .assertNext(balanceResult ->
+                        assertThat(balanceResult.value()).isNotNull())
                 .verifyComplete();
     }
 }
