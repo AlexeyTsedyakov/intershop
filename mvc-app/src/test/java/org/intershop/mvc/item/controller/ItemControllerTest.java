@@ -8,6 +8,7 @@ import org.intershop.mvc.item.service.ItemService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.security.oauth2.client.autoconfigure.reactive.ReactiveOAuth2ClientAutoConfiguration;
 import org.springframework.boot.security.oauth2.client.autoconfigure.reactive.ReactiveOAuth2ClientWebSecurityAutoConfiguration;
 import org.springframework.boot.webflux.test.autoconfigure.WebFluxTest;
 import org.springframework.data.domain.Page;
@@ -27,7 +28,10 @@ import static org.mockito.Mockito.*;
 
 @WebFluxTest(
         controllers = ItemController.class,
-        excludeAutoConfiguration = ReactiveOAuth2ClientWebSecurityAutoConfiguration.class
+        excludeAutoConfiguration = {
+                ReactiveOAuth2ClientWebSecurityAutoConfiguration.class,
+                ReactiveOAuth2ClientAutoConfiguration.class
+        }
 )
 public class ItemControllerTest {
     @Autowired
