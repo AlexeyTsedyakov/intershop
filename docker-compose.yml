@@ -1,44 +1,72 @@
 services:
   db:
     image: postgres:18.1
-    volumes:
-      - postgres:/var/lib/postgresql
-    environment:
-      POSTGRES_DB: intershop
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
     ports:
       - "5432:5432"
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - postgres:/var/lib/postgresql
 
   redis:
     image: redis:8.6.1-alpine
     ports:
       - "6379:6379"
 
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.6.1
+    ports:
+      - "8088:8088"
+      - "9000:9000"
+    environment:
+      KC_HTTP_PORT: ${KC_HTTP_PORT}
+      KC_BOOTSTRAP_ADMIN_USERNAME: ${KC_BOOTSTRAP_ADMIN_USERNAME}
+      KC_BOOTSTRAP_ADMIN_PASSWORD: ${KC_BOOTSTRAP_ADMIN_PASSWORD}
+      KC_HEALTH_ENABLED: "true"
+    command:
+      - start-dev
+    volumes:
+      - keycloak_data:/opt/keycloak/data
+    healthcheck:
+      test: "exec 3<>/dev/tcp/localhost/9000 && echo -e 'GET /health/ready HTTP/1.1\\r\\nHost: localhost\\r\\nConnection: close\\r\\n\\r\\n' >&3 && cat <&3 | grep -q '\"status\": \"UP\"'"
+      interval: 3s
+      timeout: 5s
+      retries: 30
+      start_period: 30s
+
   payment-service:
     build: ./payment-service
     ports:
       - "8081:8081"
+    environment:
+      KC_HTTP_HOST: "keycloak"
+    depends_on:
+      keycloak:
+        condition: service_healthy
 
   mvc-app:
     build: ./mvc-app
     ports:
       - "8080:8080"
+    env_file:
+      - ./.env
     environment:
-      DB_HOST: "db"
-      DB_PORT: 5432
-      DB_NAME: "intershop"
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_HOST: "db"
       REDIS_HOST: "redis"
-      REDIS_PORT: 6379
       PAYMENT_HOST: "payment-service"
-      PAYMENT_PORT: 8081
-
+      KC_HTTP_HOST: "keycloak"
     depends_on:
-      - db
-      - redis
-      - payment-service
+      db:
+        condition: service_started
+      redis:
+        condition: service_started
+      keycloak:
+        condition: service_healthy
+      payment-service:
+        condition: service_started
 
 volumes:
   postgres:
+  keycloak_data:
