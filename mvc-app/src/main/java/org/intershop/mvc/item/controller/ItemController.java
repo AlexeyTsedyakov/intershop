@@ -57,21 +57,26 @@ public class ItemController {
     }
 
     @GetMapping("/{id}")
-    public Mono<Rendering> showItem(@PathVariable Long id, WebSession session) {
+    public Mono<Rendering> showItem(@PathVariable Long id, WebSession session, Authentication authentication) {
         Cart cart = cartSessionService.getCart(session);
+        boolean isAuthenticated = authentication != null && authentication.isAuthenticated();
 
         return itemService.findById(id)
                 .map(item -> Rendering.view("item")
                         .modelAttribute("item", item)
                         .modelAttribute("cart", cart)
+                        .modelAttribute("isAuthenticated", isAuthenticated)
                         .build()
                 );
     }
 
     @GetMapping("/new")
-    public Mono<Rendering> showNewItem() {
+    public Mono<Rendering> showNewItem(Authentication authentication) {
+        boolean isAuthenticated = authentication != null && authentication.isAuthenticated();
+
         return Mono.just(Rendering.view("new-item")
                 .modelAttribute("item", new Item())
+                .modelAttribute("isAuthenticated", isAuthenticated)
                 .build());
     }
 

@@ -8,18 +8,22 @@
 
 <body>
 <header class="main-header">
-    <h1>Заказы</h1>
     <nav class="main-navigation">
         <ul>
             <li><a th:href="@{/items}">Все товары</a></li>
             <li><a th:href="@{/cart}">Корзина</a></li>
             <li><a th:href="@{/orders}">Заказы</a></li>
             <li><a th:href="@{/items/new}">Добавить товар</a></li>
+            <li th:if="${!isAuthenticated}"><a th:href="@{/login}">Вход</a></li>
+            <li th:if="${!isAuthenticated}"><a th:href="@{/users/registration}">Регистрация</a></li>
+            <li th:if="${isAuthenticated}"><a th:href="@{/logout}">Выход</a></li>
         </ul>
     </nav>
 </header>
 
 <main>
+    <h1>Заказы</h1>
+
     <section class="orders-container">
         <article class="order-card" th:each="order : ${orders}">
             <a th:href="@{/orders/{id} (id=${order.id})}">

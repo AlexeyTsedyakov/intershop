@@ -8,7 +8,6 @@
 
 <body>
 <header class="main-header">
-    <h1>Витрина товаров</h1>
     <nav class="main-navigation">
         <ul>
             <li><a th:href="@{/items}">Все товары</a></li>
@@ -23,6 +22,8 @@
 </header>
 
 <main>
+    <h1>Витрина товаров</h1>
+
     <form method="get" th:action="@{/items}" class="controls-form">
         <input type="hidden" name="page" value="0"/>
 
