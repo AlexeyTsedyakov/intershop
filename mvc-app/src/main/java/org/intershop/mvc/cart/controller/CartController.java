@@ -5,6 +5,7 @@ import org.intershop.mvc.cart.model.Cart;
 import org.intershop.mvc.cart.service.CartService;
 import org.intershop.mvc.cart.service.CartSessionService;
 import org.intershop.mvc.payment.service.BalanceService;
+import org.intershop.mvc.shared.util.AuthUtil;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
@@ -19,23 +20,24 @@ public class CartController {
     private final CartService cartService;
     private final CartSessionService cartSessionService;
     private final BalanceService balanceService;
+    private final AuthUtil authUtil;
 
     @GetMapping
     public Mono<Rendering> showCart(WebSession session, Authentication authentication) {
         Cart cart = cartSessionService.getCart(session);
-        boolean isAuthenticated = authentication != null && authentication.isAuthenticated();
+        Long userId = authUtil.getUserId(authentication);
 
         return cartService.fetchItems(cart)
                 .then(Mono.zip(
                         cartService.getTotalAmount(cart),
-                        balanceService.getBalance()
+                        balanceService.getBalance(userId)
                 ))
                 .map(tuple -> Rendering.view("cart")
                         .modelAttribute("cart", cart)
                         .modelAttribute("totalAmount", tuple.getT1())
                         .modelAttribute("balance", tuple.getT2().value())
                         .modelAttribute("balanceError", tuple.getT2().errorMessage())
-                        .modelAttribute("isAuthenticated", isAuthenticated)
+                        .modelAttribute("isAuthenticated", authUtil.isAuthenticated(authentication))
                         .build());
     }
 

@@ -52,7 +52,7 @@ dependencies {
 
 openApiGenerate {
     generatorName.set("java")
-    inputSpec.set("$projectDir/src/main/resources/openapi.yaml")
+    inputSpec.set("${rootProject.projectDir}/openapi.yaml")
     outputDir.set("${layout.buildDirectory.get()}/generated/openapi")
     invokerPackage.set("org.intershop.mvc.client")
     apiPackage.set("org.intershop.mvc.client.api")

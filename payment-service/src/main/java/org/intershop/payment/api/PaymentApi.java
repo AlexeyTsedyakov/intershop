@@ -14,6 +14,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Generated;
 import jakarta.validation.Valid;
 import org.intershop.payment.model.BaseResponse;
+import org.intershop.payment.model.PaymentRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -24,7 +25,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
-@Generated(value = "org.openapitools.codegen.languages.SpringCodegen", date = "2026-04-06T17:16:22.022873700+03:00[Europe/Moscow]", comments = "Generator version: 7.21.0")
+@Generated(value = "org.openapitools.codegen.languages.SpringCodegen", date = "2026-04-25T15:09:43.923979600+03:00[Europe/Moscow]", comments = "Generator version: 7.21.0")
 @Validated
 @Tag(name = "payment", description = "the payment API")
 public interface PaymentApi {
@@ -33,7 +34,7 @@ public interface PaymentApi {
     /**
      * POST /payments : Проведение оплаты (списание с баланса)
      *
-     * @param body  (required)
+     * @param paymentRequest Запрос на проведение оплаты (required)
      * @return Стандартный ответ (status code 200)
      *         or Стандартный ответ (status code 400)
      *         or Стандартный ответ (status code 500)
@@ -61,7 +62,7 @@ public interface PaymentApi {
         consumes = { "application/json" }
     )
     default Mono<ResponseEntity<BaseResponse>> paymentsPost(
-        @Parameter(name = "body", description = "", required = true) @Valid @RequestBody Mono<Long> body,
+        @Parameter(name = "PaymentRequest", description = "Запрос на проведение оплаты", required = true) @Valid @RequestBody Mono<PaymentRequest> paymentRequest,
         @Parameter(hidden = true) final ServerWebExchange exchange
     ) {
         Mono<Void> result = Mono.empty();
@@ -69,26 +70,26 @@ public interface PaymentApi {
         exchange.getResponse().setStatusCode(HttpStatus.NOT_IMPLEMENTED);
         for (MediaType mediaType : exchange.getRequest().getHeaders().getAccept()) {
             if (mediaType.isCompatibleWith(MediaType.valueOf("application/json"))) {
-                String exampleString = "{ \"description\" : \"description\", \"ok\" : true }";
+                String exampleString = "{ \"ok\" : true, \"message\" : \"message\" }";
                 result = ApiUtil.getExampleResponse(exchange, MediaType.valueOf("application/json"), exampleString);
                 break;
             }
     
             if (mediaType.isCompatibleWith(MediaType.valueOf("application/json"))) {
-                String exampleString = "{ \"description\" : \"description\", \"ok\" : true }";
+                String exampleString = "{ \"ok\" : true, \"message\" : \"message\" }";
                 result = ApiUtil.getExampleResponse(exchange, MediaType.valueOf("application/json"), exampleString);
                 break;
             }
     
             if (mediaType.isCompatibleWith(MediaType.valueOf("application/json"))) {
-                String exampleString = "{ \"description\" : \"description\", \"ok\" : true }";
+                String exampleString = "{ \"ok\" : true, \"message\" : \"message\" }";
                 result = ApiUtil.getExampleResponse(exchange, MediaType.valueOf("application/json"), exampleString);
                 break;
             }
         }
     
 
-        return result.then(body).then(Mono.empty());
+        return result.then(paymentRequest).then(Mono.empty());
 
     }
 

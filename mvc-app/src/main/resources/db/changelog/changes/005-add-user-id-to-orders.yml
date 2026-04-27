@@ -1,0 +1,13 @@
+databaseChangeLog:
+  - changeSet:
+      id: 005-add-user-id-to-orders
+      author: Alexey Tsedyakov
+      changes:
+        - addColumn: 
+            tableName: orders
+            columns:
+              - column:
+                  name: user_id
+                  type: bigint
+                  constraints:
+                    nullable: false

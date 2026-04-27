@@ -1,10 +1,10 @@
 package org.intershop.mvc.user.service;
 
 import lombok.RequiredArgsConstructor;
+import org.intershop.mvc.user.model.UserPrincipal;
 import org.intershop.mvc.user.repository.UserRepository;
 import org.jspecify.annotations.NonNull;
 import org.springframework.security.core.userdetails.ReactiveUserDetailsService;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
@@ -21,7 +21,8 @@ public class UserDetailsServiceImpl implements ReactiveUserDetailsService {
         return userRepository.findByUsernameIgnoreCase(username)
                 .switchIfEmpty(Mono.error(() ->
                         new UsernameNotFoundException("User not found: " + username)))
-                .map(user -> User.builder()
+                .map(user -> UserPrincipal.builder()
+                        .id(user.getId())
                         .username(user.getUsername())
                         .password(user.getPassword())
                         .build());

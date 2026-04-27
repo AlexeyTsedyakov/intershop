@@ -16,16 +16,18 @@ public class PaymentServiceIntegrationTest {
     @Test
     void processPayment_shouldNotThrowError_whenBalanceEnough() {
         long totalAmount = 0;
+        long userId = 1;
 
-        StepVerifier.create(paymentService.processPayment(totalAmount))
+        StepVerifier.create(paymentService.processPayment(userId, totalAmount))
                 .verifyComplete();
     }
 
     @Test
     void processPayment_shouldThrowError_whenBalanceNotEnough() {
         long totalAmount = Long.MAX_VALUE;
+        long userId = 1;
 
-        StepVerifier.create(paymentService.processPayment(totalAmount))
+        StepVerifier.create(paymentService.processPayment(userId, totalAmount))
                 .verifyError(WebClientResponseException.class);
     }
 }

@@ -25,6 +25,9 @@ public class Order {
     @Column("total_amount")
     private Long totalAmount;
 
+    @Column("user_id")
+    private Long userId;
+
     @CreatedDate
     @Column("created_at")
     private LocalDateTime createdAt;
@@ -34,18 +37,6 @@ public class Order {
 
     public List<OrderItem> getItems() {
         return List.copyOf(items);
-    }
-
-    public void addItem(OrderItem item) {
-        item.setOrderId(this.id);
-        this.items.add(item);
-    }
-
-    public OrderItem getItemByItemId(long itemId) {
-        return items.stream()
-                .filter(orderItem -> orderItem.getItem().getId() == itemId)
-                .findFirst()
-                .orElse(null);
     }
 
     public long calculateTotalAmount() {

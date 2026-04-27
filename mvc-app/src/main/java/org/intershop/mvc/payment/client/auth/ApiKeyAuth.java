@@ -16,7 +16,7 @@ package org.intershop.mvc.payment.client.auth;
 import org.springframework.http.HttpHeaders;
 import org.springframework.util.MultiValueMap;
 
-@jakarta.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2026-04-06T16:58:24.114138500+03:00[Europe/Moscow]", comments = "Generator version: 7.21.0")
+@jakarta.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2026-04-25T15:08:36.917078300+03:00[Europe/Moscow]", comments = "Generator version: 7.21.0")
 public class ApiKeyAuth implements Authentication {
     private final String location;
     private final String paramName;

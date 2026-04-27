@@ -3,6 +3,7 @@ package org.intershop.payment.api;
 import lombok.RequiredArgsConstructor;
 import org.intershop.payment.api.response.BaseResponseFactory;
 import org.intershop.payment.model.BaseResponse;
+import org.intershop.payment.model.PaymentRequest;
 import org.intershop.payment.service.PaymentService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -18,7 +19,7 @@ public class PaymentApiController implements PaymentApi {
     private final PaymentService paymentService;
 
     @Override
-    public Mono<ResponseEntity<BaseResponse>> paymentsPost(Mono<Long> body, ServerWebExchange exchange) {
+    public Mono<ResponseEntity<BaseResponse>> paymentsPost(Mono<PaymentRequest> body, ServerWebExchange exchange) {
         return body
                 .flatMap(paymentService::processPayment)
                 .then(Mono.just(ResponseEntity.ok()

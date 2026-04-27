@@ -1,5 +1,7 @@
 package org.intershop.mvc.cart.model;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.intershop.mvc.item.model.Item;
 
 import java.util.ArrayList;
@@ -8,6 +10,7 @@ import java.util.Optional;
 
 public class Cart {
     private final List<CartItem> cartItems = new ArrayList<>();
+    @Getter @Setter private Long userId;
 
     public List<CartItem> getItems() {
         return List.copyOf(cartItems);

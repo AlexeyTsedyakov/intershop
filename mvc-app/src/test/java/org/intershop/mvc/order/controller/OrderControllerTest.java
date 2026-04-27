@@ -4,6 +4,7 @@ import org.intershop.mvc.cart.model.Cart;
 import org.intershop.mvc.order.model.Order;
 import org.intershop.mvc.cart.service.CartSessionService;
 import org.intershop.mvc.order.service.OrderService;
+import org.intershop.mvc.shared.util.AuthUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,15 +32,14 @@ import static org.mockito.Mockito.*;
 public class OrderControllerTest {
     @Autowired
     private WebTestClient webTestClient;
-
     @MockitoBean
     private OrderService orderService;
-
     @MockitoBean
     private CartSessionService cartSessionService;
-
     @MockitoBean
     private Cart cart;
+    @MockitoBean
+    private AuthUtil authUtil;
 
     private Order testOrder;
 
@@ -63,16 +63,18 @@ public class OrderControllerTest {
 
     @Test
     void showOrders_shouldReturnView() {
+        Long userId = 1L;
         List<Order> orders = List.of(testOrder);
         long ordersAmount = 155L;
-        when(orderService.findAll()).thenReturn(Flux.fromIterable(orders));
+        when(orderService.findAllByUserId(anyLong())).thenReturn(Flux.fromIterable(orders));
         when(orderService.getOrdersAmount(orders)).thenReturn(Mono.just(ordersAmount));
+        when(authUtil.getUserId(any())).thenReturn(userId);
 
         webTestClient.get().uri("/orders")
                 .exchange()
                 .expectStatus().isOk();
 
-        verify(orderService, times(1)).findAll();
+        verify(orderService, times(1)).findAllByUserId(userId);
         verify(orderService, times(1)).getOrdersAmount(orders);
     }
 

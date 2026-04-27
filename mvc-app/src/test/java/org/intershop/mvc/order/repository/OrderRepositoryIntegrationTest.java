@@ -29,6 +29,7 @@ public class OrderRepositoryIntegrationTest {
     void setUp() {
         Order order = new Order();
         order.setTotalAmount(0L);
+        order.setUserId(1L);
 
         StepVerifier.create(orderRepository.deleteAll().then(orderRepository.save(order)))
                 .assertNext(saved -> savedOrder = saved)
@@ -39,6 +40,7 @@ public class OrderRepositoryIntegrationTest {
     void save_shouldPersist_withNewOrder() {
         Order order = new Order();
         order.setTotalAmount(100L);
+        order.setUserId(1L);
 
         StepVerifier.create(orderRepository.save(order))
                 .assertNext(saved -> {

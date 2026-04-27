@@ -14,15 +14,15 @@ public class BalanceServiceImpl implements BalanceService {
     private final BalanceRepository balanceRepository;
 
     @Override
-    public Mono<Long> getBalance() {
-        return balanceRepository.getBalance();
+    public Mono<Long> getBalance(long userId) {
+        return balanceRepository.getBalance(userId);
     }
 
     @Override
-    public Mono<Void> updateBalance(long balance) {
+    public Mono<Void> updateBalance(long userId, long balance) {
         if (balance < 0) {
             return Mono.error(new IllegalArgumentException("Баланс не может быть отрицательным"));
         }
-        return balanceRepository.updateBalance(balance);
+        return balanceRepository.updateBalance(userId, balance);
     }
 }

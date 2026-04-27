@@ -47,7 +47,7 @@ import java.time.OffsetDateTime;
 import java.util.*;
 import java.util.Map.Entry;
 
-@jakarta.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2026-04-06T16:58:24.114138500+03:00[Europe/Moscow]", comments = "Generator version: 7.21.0")
+@jakarta.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2026-04-25T15:08:36.917078300+03:00[Europe/Moscow]", comments = "Generator version: 7.21.0")
 public class ApiClient extends JavaTimeFormatter {
     public enum CollectionFormat {
         CSV(","), TSV("\t"), SSV(" "), PIPES("|"), MULTI(null);

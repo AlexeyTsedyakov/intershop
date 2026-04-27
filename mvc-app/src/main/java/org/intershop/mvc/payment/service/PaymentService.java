@@ -3,5 +3,5 @@ package org.intershop.mvc.payment.service;
 import reactor.core.publisher.Mono;
 
 public interface PaymentService {
-    Mono<Void> processPayment(long totalAmount);
+    Mono<Void> processPayment(long userId, long totalAmount);
 }

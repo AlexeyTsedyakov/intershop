@@ -1,7 +1,6 @@
 package org.intershop.payment.api;
 
 
-import io.swagger.v3.oas.annotations.Parameter;
 import lombok.RequiredArgsConstructor;
 import org.intershop.payment.api.response.BaseResponseFactory;
 import org.intershop.payment.model.BaseResponse;
@@ -20,8 +19,8 @@ public class BalanceApiController implements BalanceApi {
     private final BalanceService balanceService;
 
     @Override
-    public Mono<ResponseEntity<Long>> balanceGet(@Parameter(hidden = true) final ServerWebExchange exchange) {
-        return balanceService.getBalance()
+    public Mono<ResponseEntity<Long>> balanceGet(Long userId, ServerWebExchange exchange) {
+        return balanceService.getBalance(userId)
                 .map(ResponseEntity::ok);
     }
 

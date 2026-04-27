@@ -27,7 +27,7 @@ dependencies {
 
 openApiGenerate {
     generatorName.set("spring")
-    inputSpec.set("$projectDir/src/main/resources/openapi.yaml")
+    inputSpec.set("${rootProject.projectDir}/openapi.yaml")
     outputDir.set("${layout.buildDirectory.get()}/generated/openapi")
     apiPackage.set("org.intershop.payment.api")
     modelPackage.set("org.intershop.payment.model")

@@ -1,5 +1,6 @@
 package org.intershop.payment.service;
 
+import org.intershop.payment.model.PaymentRequest;
 import org.intershop.payment.service.impl.PaymentServiceImpl;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,26 +21,28 @@ class PaymentServiceImplTest {
 
     @Test
     void shouldProcessPayment_whenAmountValid() {
+        long userId = 1;
         long balance = 10000;
         long amount = 5000;
-        when(balanceService.getBalance()).thenReturn(Mono.just(balance));
-        when(balanceService.updateBalance(anyLong())).thenReturn(Mono.empty());
+        when(balanceService.getBalance(anyLong())).thenReturn(Mono.just(balance));
+        when(balanceService.updateBalance(anyLong(), anyLong())).thenReturn(Mono.empty());
 
-        StepVerifier.create(paymentService.processPayment(amount))
+        StepVerifier.create(paymentService.processPayment(new PaymentRequest(userId, amount)))
                 .verifyComplete();
-        verify(balanceService, times(1)).getBalance();
-        verify(balanceService, times(1)).updateBalance(balance - amount);
+        verify(balanceService, times(1)).getBalance(userId);
+        verify(balanceService, times(1)).updateBalance(userId, balance - amount);
     }
 
     @Test
     void shouldThrowException_whenProcessPayment_withIncorrectAmount() {
+        long userId = 1;
         long balance = 1000;
         long amount = 5000;
-        when(balanceService.getBalance()).thenReturn(Mono.just(balance));
+        when(balanceService.getBalance(anyLong())).thenReturn(Mono.just(balance));
 
-        StepVerifier.create(paymentService.processPayment(amount))
+        StepVerifier.create(paymentService.processPayment(new PaymentRequest(userId, amount)))
                 .verifyError(IllegalArgumentException.class);
-        verify(balanceService, times(1)).getBalance();
-        verify(balanceService, never()).updateBalance(anyLong());
+        verify(balanceService, times(1)).getBalance(userId);
+        verify(balanceService, never()).updateBalance(anyLong(), anyLong());
     }
 }

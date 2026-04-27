@@ -3,6 +3,7 @@ package org.intershop.mvc.item.controller;
 import org.intershop.mvc.cart.model.Cart;
 import org.intershop.mvc.item.model.Item;
 import org.intershop.mvc.cart.service.CartSessionService;
+import org.intershop.mvc.shared.util.AuthUtil;
 import org.intershop.mvc.upload.service.FileUploadService;
 import org.intershop.mvc.item.service.ItemService;
 import org.junit.jupiter.api.BeforeEach;
@@ -36,15 +37,14 @@ import static org.mockito.Mockito.*;
 public class ItemControllerTest {
     @Autowired
     private WebTestClient webTestClient;
-
     @MockitoBean
     private ItemService itemService;
-
     @MockitoBean
     private CartSessionService cartSessionService;
-
     @MockitoBean
     private FileUploadService fileUploadService;
+    @MockitoBean
+    private AuthUtil authUtil;
 
     private Item testItem;
 

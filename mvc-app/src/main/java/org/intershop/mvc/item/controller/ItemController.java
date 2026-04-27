@@ -4,9 +4,10 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.intershop.mvc.cart.model.Cart;
 import org.intershop.mvc.cart.service.CartSessionService;
+import org.intershop.mvc.item.model.Item;
 import org.intershop.mvc.item.repository.criteria.ItemCriteria;
 import org.intershop.mvc.item.service.ItemService;
-import org.intershop.mvc.item.model.Item;
+import org.intershop.mvc.shared.util.AuthUtil;
 import org.intershop.mvc.upload.service.FileUploadService;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -28,6 +29,7 @@ public class ItemController {
     private final ItemService itemService;
     private final CartSessionService cartSessionService;
     private final FileUploadService fileUploadService;
+    private final AuthUtil authUtil;
 
 
     @GetMapping
@@ -40,7 +42,6 @@ public class ItemController {
         Pageable pageable = PageRequest.of(page, size, parseSort(sort));
         Criteria criteria = ItemCriteria.nameContains(search);
         Cart cart = cartSessionService.getCart(session);
-        boolean isAuthenticated = authentication != null && authentication.isAuthenticated();
 
         return itemService.findAll(criteria, pageable)
                 .map(itemPage -> Rendering.view("items")
@@ -51,7 +52,7 @@ public class ItemController {
                         .modelAttribute("sort", sort)
                         .modelAttribute("search", search)
                         .modelAttribute("cart", cart)
-                        .modelAttribute("isAuthenticated", isAuthenticated)
+                        .modelAttribute("isAuthenticated", authUtil.isAuthenticated(authentication))
                         .build()
                 );
     }
@@ -59,35 +60,32 @@ public class ItemController {
     @GetMapping("/{id}")
     public Mono<Rendering> showItem(@PathVariable Long id, WebSession session, Authentication authentication) {
         Cart cart = cartSessionService.getCart(session);
-        boolean isAuthenticated = authentication != null && authentication.isAuthenticated();
 
         return itemService.findById(id)
                 .map(item -> Rendering.view("item")
                         .modelAttribute("item", item)
                         .modelAttribute("cart", cart)
-                        .modelAttribute("isAuthenticated", isAuthenticated)
+                        .modelAttribute("isAuthenticated", authUtil.isAuthenticated(authentication))
                         .build()
                 );
     }
 
     @GetMapping("/new")
     public Mono<Rendering> showNewItem(Authentication authentication) {
-        boolean isAuthenticated = authentication != null && authentication.isAuthenticated();
-
         return Mono.just(Rendering.view("new-item")
                 .modelAttribute("item", new Item())
-                .modelAttribute("isAuthenticated", isAuthenticated)
+                .modelAttribute("isAuthenticated", authUtil.isAuthenticated(authentication))
                 .build());
     }
 
     @PostMapping
     public Mono<Rendering> createItem(@Valid @ModelAttribute Item item, BindingResult bindingResult,
-                                      @RequestPart FilePart imageFile) {
-
+                                      @RequestPart FilePart imageFile, Authentication authentication) {
         if (bindingResult.hasErrors()) {
             return Mono.just(Rendering.view("new-item")
                     .modelAttribute("item", item)
                     .modelAttribute("errors", bindingResult.getAllErrors())
+                    .modelAttribute("isAuthenticated", authUtil.isAuthenticated(authentication))
                     .build());
         }
 

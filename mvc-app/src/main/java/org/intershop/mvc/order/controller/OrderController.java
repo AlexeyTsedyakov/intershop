@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.intershop.mvc.cart.model.Cart;
 import org.intershop.mvc.cart.service.CartSessionService;
 import org.intershop.mvc.order.service.OrderService;
+import org.intershop.mvc.shared.util.AuthUtil;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -20,35 +21,33 @@ import reactor.core.publisher.Mono;
 public class OrderController {
     private final OrderService orderService;
     private final CartSessionService cartSessionService;
+    private final AuthUtil authUtil;
 
     @GetMapping("/{id}")
     public Mono<Rendering> showOrder(@PathVariable Long id, Authentication authentication) {
-        boolean isAuthenticated = authentication != null && authentication.isAuthenticated();
-
         return orderService.findById(id)
                 .map(order -> Rendering.view("order")
                         .modelAttribute("order", order)
-                        .modelAttribute("isAuthenticated", isAuthenticated)
+                        .modelAttribute("isAuthenticated", authUtil.isAuthenticated(authentication))
                         .build());
     }
 
     @GetMapping
     public Mono<Rendering> showOrders(Authentication authentication) {
-        boolean isAuthenticated = authentication != null && authentication.isAuthenticated();
-
-        return orderService.findAll()
+        return orderService.findAllByUserId(authUtil.getUserId(authentication))
                 .collectList()
                 .flatMap(orders -> orderService.getOrdersAmount(orders)
                         .map(ordersAmount -> Rendering.view("orders")
                                 .modelAttribute("orders", orders)
                                 .modelAttribute("ordersAmount", ordersAmount)
-                                .modelAttribute("isAuthenticated", isAuthenticated)
+                                .modelAttribute("isAuthenticated", authUtil.isAuthenticated(authentication))
                                 .build()));
     }
 
     @PostMapping
-    public Mono<Rendering> placeOrder(WebSession session) {
+    public Mono<Rendering> placeOrder(WebSession session, Authentication authentication) {
         Cart cart = cartSessionService.getCart(session);
+        cart.setUserId(authUtil.getUserId(authentication));
 
         return orderService.placeOrder(cart)
                 .map(order -> Rendering.redirectTo("/orders/" + order.getId()).build());

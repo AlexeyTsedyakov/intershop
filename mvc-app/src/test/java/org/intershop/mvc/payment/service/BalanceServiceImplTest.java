@@ -21,29 +21,31 @@ class BalanceServiceImplTest {
 
     @Test
     void getBalance_shouldReturnNonEmpty_whenPaymentServiceAvailable() {
+        long userId = 1;
         long balance = 100;
-        when(balanceApi.balanceGet()).thenReturn(Mono.just(balance));
+        when(balanceApi.balanceGet(anyLong())).thenReturn(Mono.just(balance));
 
-        StepVerifier.create(balanceService.getBalance())
+        StepVerifier.create(balanceService.getBalance(userId))
                 .assertNext(balanceResult -> {
                         assertThat(balanceResult.value()).isEqualTo(balance);
                         assertThat(balanceResult.errorMessage()).isNull();
                 })
                 .verifyComplete();
-        verify(balanceApi, times(1)).balanceGet();
+        verify(balanceApi, times(1)).balanceGet(userId);
     }
 
     @Test
     void getBalance_shouldReturnEmpty_whenPaymentServiceNotAvailable() {
-         when(balanceApi.balanceGet()).thenReturn(Mono.error(new RuntimeException("Error")));
+        long userId = 1;
+        when(balanceApi.balanceGet(anyLong())).thenReturn(Mono.error(new RuntimeException("Error")));
 
-         StepVerifier.create(balanceService.getBalance())
+         StepVerifier.create(balanceService.getBalance(userId))
                  .assertNext(balanceResult -> {
                          assertThat(balanceResult.value()).isNull();
                          assertThat(balanceResult.errorMessage()).isNotEmpty();
                  })
                  .verifyComplete();
-         verify(balanceApi, times(1)).balanceGet();
+         verify(balanceApi, times(1)).balanceGet(userId);
     }
 
 }

@@ -2,6 +2,7 @@ package org.intershop.mvc.payment.client.api;
 
 import org.intershop.mvc.payment.client.ApiClient;
 import org.intershop.mvc.payment.model.BaseResponse;
+import org.intershop.mvc.payment.model.PaymentRequest;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
 import org.springframework.util.LinkedMultiValueMap;
@@ -14,7 +15,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@jakarta.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2026-04-06T16:58:24.114138500+03:00[Europe/Moscow]", comments = "Generator version: 7.21.0")
+@jakarta.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2026-04-25T15:08:36.917078300+03:00[Europe/Moscow]", comments = "Generator version: 7.21.0")
 public class PaymentApi {
     private ApiClient apiClient;
 
@@ -40,15 +41,15 @@ public class PaymentApi {
      * <p><b>200</b> - Стандартный ответ
      * <p><b>400</b> - Стандартный ответ
      * <p><b>500</b> - Стандартный ответ
-     * @param body The body parameter
+     * @param paymentRequest Запрос на проведение оплаты
      * @return BaseResponse
      * @throws WebClientResponseException if an error occurs while attempting to invoke the API
      */
-    private ResponseSpec paymentsPostRequestCreation(@jakarta.annotation.Nonnull Long body) throws WebClientResponseException {
-        Object postBody = body;
-        // verify the required parameter 'body' is set
-        if (body == null) {
-            throw new WebClientResponseException("Missing the required parameter 'body' when calling paymentsPost", HttpStatus.BAD_REQUEST.value(), HttpStatus.BAD_REQUEST.getReasonPhrase(), null, null, null);
+    private ResponseSpec paymentsPostRequestCreation(@jakarta.annotation.Nonnull PaymentRequest paymentRequest) throws WebClientResponseException {
+        Object postBody = paymentRequest;
+        // verify the required parameter 'paymentRequest' is set
+        if (paymentRequest == null) {
+            throw new WebClientResponseException("Missing the required parameter 'paymentRequest' when calling paymentsPost", HttpStatus.BAD_REQUEST.value(), HttpStatus.BAD_REQUEST.getReasonPhrase(), null, null, null);
         }
         // create path and map variables
         final Map<String, Object> pathParams = new HashMap<String, Object>();
@@ -79,13 +80,13 @@ public class PaymentApi {
      * <p><b>200</b> - Стандартный ответ
      * <p><b>400</b> - Стандартный ответ
      * <p><b>500</b> - Стандартный ответ
-     * @param body The body parameter
+     * @param paymentRequest Запрос на проведение оплаты
      * @return BaseResponse
      * @throws WebClientResponseException if an error occurs while attempting to invoke the API
      */
-    public Mono<BaseResponse> paymentsPost(@jakarta.annotation.Nonnull Long body) throws WebClientResponseException {
+    public Mono<BaseResponse> paymentsPost(@jakarta.annotation.Nonnull PaymentRequest paymentRequest) throws WebClientResponseException {
         ParameterizedTypeReference<BaseResponse> localVarReturnType = new ParameterizedTypeReference<BaseResponse>() {};
-        return paymentsPostRequestCreation(body).bodyToMono(localVarReturnType);
+        return paymentsPostRequestCreation(paymentRequest).bodyToMono(localVarReturnType);
     }
 
     /**
@@ -94,13 +95,13 @@ public class PaymentApi {
      * <p><b>200</b> - Стандартный ответ
      * <p><b>400</b> - Стандартный ответ
      * <p><b>500</b> - Стандартный ответ
-     * @param body The body parameter
+     * @param paymentRequest Запрос на проведение оплаты
      * @return ResponseEntity&lt;BaseResponse&gt;
      * @throws WebClientResponseException if an error occurs while attempting to invoke the API
      */
-    public Mono<ResponseEntity<BaseResponse>> paymentsPostWithHttpInfo(@jakarta.annotation.Nonnull Long body) throws WebClientResponseException {
+    public Mono<ResponseEntity<BaseResponse>> paymentsPostWithHttpInfo(@jakarta.annotation.Nonnull PaymentRequest paymentRequest) throws WebClientResponseException {
         ParameterizedTypeReference<BaseResponse> localVarReturnType = new ParameterizedTypeReference<BaseResponse>() {};
-        return paymentsPostRequestCreation(body).toEntity(localVarReturnType);
+        return paymentsPostRequestCreation(paymentRequest).toEntity(localVarReturnType);
     }
 
     /**
@@ -109,11 +110,11 @@ public class PaymentApi {
      * <p><b>200</b> - Стандартный ответ
      * <p><b>400</b> - Стандартный ответ
      * <p><b>500</b> - Стандартный ответ
-     * @param body The body parameter
+     * @param paymentRequest Запрос на проведение оплаты
      * @return ResponseSpec
      * @throws WebClientResponseException if an error occurs while attempting to invoke the API
      */
-    public ResponseSpec paymentsPostWithResponseSpec(@jakarta.annotation.Nonnull Long body) throws WebClientResponseException {
-        return paymentsPostRequestCreation(body);
+    public ResponseSpec paymentsPostWithResponseSpec(@jakarta.annotation.Nonnull PaymentRequest paymentRequest) throws WebClientResponseException {
+        return paymentsPostRequestCreation(paymentRequest);
     }
 }

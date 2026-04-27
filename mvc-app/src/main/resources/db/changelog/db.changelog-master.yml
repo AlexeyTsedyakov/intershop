@@ -7,6 +7,8 @@ databaseChangeLog:
       file: db/changelog/changes/003-create-order-items.yml
   - include:
       file: db/changelog/changes/004-create-users.yml
+  - include:
+      file: db/changelog/changes/005-add-user-id-to-orders.yml
 
   - include:
       file: db/changelog/data/001-init-items.yml

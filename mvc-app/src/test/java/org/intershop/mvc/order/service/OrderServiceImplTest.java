@@ -5,6 +5,7 @@ import org.intershop.mvc.order.factory.OrderFactory;
 import org.intershop.mvc.order.model.Order;
 import org.intershop.mvc.order.repository.OrderRepository;
 import org.intershop.mvc.payment.service.PaymentService;
+import org.intershop.mvc.shared.util.AuthUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +24,8 @@ import static org.mockito.Mockito.*;
 
 @SpringBootTest(classes = OrderServiceImpl.class)
 public class OrderServiceImplTest {
+    @Autowired
+    private OrderServiceImpl orderService;
     @MockitoBean
     private OrderRepository orderRepository;
     @MockitoBean
@@ -31,8 +34,8 @@ public class OrderServiceImplTest {
     private PaymentService paymentService;
     @MockitoBean
     private OrderFactory orderFactory;
-    @Autowired
-    private OrderServiceImpl orderService;
+    @MockitoBean
+    private AuthUtil authUtil;
 
     private Order testOrder;
 
@@ -73,30 +76,34 @@ public class OrderServiceImplTest {
     }
 
     @Test
-    void findAll_shouldReturnList() {
+    void findAllByUserId_shouldReturnList() {
+        Long userId = 1L;
         List<Order> expected = List.of(testOrder);
-        when(orderRepository.findAll()).thenReturn(Flux.fromIterable(expected));
+        when(orderRepository.findAllByUserId(userId)).thenReturn(Flux.fromIterable(expected));
         when(orderItemService.findAllByOrderIdsAsMap(any())).thenReturn(Mono.just(Map.of()));
 
-        Flux<Order> orders = orderService.findAll();
+        Flux<Order> orders = orderService.findAllByUserId(userId);
 
         StepVerifier.create(orders)
                 .expectNext(testOrder)
                 .verifyComplete();
 
-        verify(orderRepository).findAll();
+        verify(orderRepository).findAllByUserId(userId);
         verify(orderItemService).findAllByOrderIdsAsMap(any());
     }
 
     @Test
     void placeOrder_shouldCreateAndSaveOrder_withItemsAndTotalAmount() {
+        long userId = 1;
         Cart cart = new Cart();
+        cart.setUserId(userId);
         Order order = new Order();
         order.setId(1L);
         order.setTotalAmount(123L);
+        order.setUserId(userId);
 
         when(orderFactory.createFromCart(any(Cart.class))).thenReturn(order);
-        when(paymentService.processPayment(anyLong())).thenReturn(Mono.empty());
+        when(paymentService.processPayment(anyLong(), anyLong())).thenReturn(Mono.empty());
         when(orderRepository.save(any(Order.class))).thenReturn(Mono.just(order));
         when(orderItemService.saveAll(anyList())).thenReturn(Flux.empty());
 
@@ -105,7 +112,8 @@ public class OrderServiceImplTest {
                 .verifyComplete();
 
         verify(orderFactory, times(1)).createFromCart(cart);
-        verify(paymentService, times(1)).processPayment(order.getTotalAmount());
+        verify(paymentService, times(1)).processPayment(
+                order.getUserId(), order.getTotalAmount());
         verify(orderRepository, times(1)).save(any(Order.class));
         verify(orderItemService, times(1)).saveAll(any());
         assertThat(cart.getItems()).isEmpty();

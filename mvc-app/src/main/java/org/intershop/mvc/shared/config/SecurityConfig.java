@@ -2,6 +2,7 @@ package org.intershop.mvc.shared.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.ReactiveAuthenticationManager;
 import org.springframework.security.authentication.UserDetailsRepositoryReactiveAuthenticationManager;
 import org.springframework.security.config.Customizer;
@@ -11,6 +12,7 @@ import org.springframework.security.core.userdetails.ReactiveUserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.server.SecurityWebFilterChain;
+import org.springframework.security.web.server.csrf.ServerCsrfTokenRequestAttributeHandler;
 
 @Configuration
 @EnableWebFluxSecurity
@@ -32,14 +34,19 @@ public class SecurityConfig {
     @Bean
     public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http,
                                                          ReactiveAuthenticationManager authenticationManager) {
+        var csrfHandler = new ServerCsrfTokenRequestAttributeHandler();
+        csrfHandler.setTokenFromMultipartDataEnabled(true);
+
         return http
                 .authenticationManager(authenticationManager)
                 .authorizeExchange(exchanges -> exchanges
-                        .pathMatchers("/items/new").authenticated()
-                        .pathMatchers("/", "/items/**","/img/**", "/css/**").permitAll()
+                        .pathMatchers(HttpMethod.GET, "/items/new").authenticated()
+                        .pathMatchers(HttpMethod.POST, "/items").authenticated()
+                        .pathMatchers("/", "/items/**", "/img/**", "/css/**").permitAll()
                         .pathMatchers("/users/registration").permitAll()
                         .anyExchange().authenticated()
                 )
+                .csrf(csrf -> csrf.csrfTokenRequestHandler(csrfHandler))
                 .formLogin(Customizer.withDefaults())
                 .build();
     }

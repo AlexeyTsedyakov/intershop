@@ -12,7 +12,7 @@ public interface OrderService {
 
     Mono<Order> findById(Long id);
 
-    Flux<Order> findAll();
+    Flux<Order> findAllByUserId(Long id);
 
     Mono<Long> getOrdersAmount(List<Order> orders);
 }

@@ -28,18 +28,18 @@ import com.fasterxml.jackson.annotation.JsonTypeName;
  */
 @JsonPropertyOrder({
   BaseResponse.JSON_PROPERTY_OK,
-  BaseResponse.JSON_PROPERTY_DESCRIPTION
+  BaseResponse.JSON_PROPERTY_MESSAGE
 })
 @JsonTypeName("baseResponse")
-@jakarta.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2026-04-06T16:58:24.114138500+03:00[Europe/Moscow]", comments = "Generator version: 7.21.0")
+@jakarta.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2026-04-25T15:08:36.917078300+03:00[Europe/Moscow]", comments = "Generator version: 7.21.0")
 public class BaseResponse {
   public static final String JSON_PROPERTY_OK = "ok";
   @jakarta.annotation.Nullable
   private Boolean ok;
 
-  public static final String JSON_PROPERTY_DESCRIPTION = "description";
+  public static final String JSON_PROPERTY_MESSAGE = "message";
   @jakarta.annotation.Nullable
-  private String description;
+  private String message;
 
   public BaseResponse() {
   }
@@ -51,7 +51,7 @@ public class BaseResponse {
   }
 
   /**
-   * Get ok
+   * Флаг успеха операции
    * @return ok
    */
   @jakarta.annotation.Nullable
@@ -69,29 +69,29 @@ public class BaseResponse {
     this.ok = ok;
   }
 
-  public BaseResponse description(@jakarta.annotation.Nullable String description) {
+  public BaseResponse message(@jakarta.annotation.Nullable String message) {
     
-    this.description = description;
+    this.message = message;
     return this;
   }
 
   /**
-   * Get description
-   * @return description
+   * Описание результата
+   * @return message
    */
   @jakarta.annotation.Nullable
-  @JsonProperty(value = JSON_PROPERTY_DESCRIPTION, required = false)
+  @JsonProperty(value = JSON_PROPERTY_MESSAGE, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
 
-  public String getDescription() {
-    return description;
+  public String getMessage() {
+    return message;
   }
 
 
-  @JsonProperty(value = JSON_PROPERTY_DESCRIPTION, required = false)
+  @JsonProperty(value = JSON_PROPERTY_MESSAGE, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setDescription(@jakarta.annotation.Nullable String description) {
-    this.description = description;
+  public void setMessage(@jakarta.annotation.Nullable String message) {
+    this.message = message;
   }
 
 
@@ -105,12 +105,12 @@ public class BaseResponse {
     }
     BaseResponse baseResponse = (BaseResponse) o;
     return Objects.equals(this.ok, baseResponse.ok) &&
-        Objects.equals(this.description, baseResponse.description);
+        Objects.equals(this.message, baseResponse.message);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(ok, description);
+    return Objects.hash(ok, message);
   }
 
   @Override
@@ -118,7 +118,7 @@ public class BaseResponse {
     StringBuilder sb = new StringBuilder();
     sb.append("class BaseResponse {\n");
     sb.append("    ok: ").append(toIndentedString(ok)).append("\n");
-    sb.append("    description: ").append(toIndentedString(description)).append("\n");
+    sb.append("    message: ").append(toIndentedString(message)).append("\n");
     sb.append("}");
     return sb.toString();
   }

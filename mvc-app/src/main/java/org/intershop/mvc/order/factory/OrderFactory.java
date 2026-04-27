@@ -15,6 +15,7 @@ public class OrderFactory {
         Order order = new Order();
         order.setTotalAmount(cart.calculateTotalAmount());
         order.setItems(orderItemMapper.fromCartItems(cart.getItems()));
+        order.setUserId(cart.getUserId());
 
         return order;
     }

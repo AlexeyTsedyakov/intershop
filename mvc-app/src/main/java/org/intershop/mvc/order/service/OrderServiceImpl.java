@@ -14,6 +14,7 @@ import reactor.core.publisher.Mono;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @RequiredArgsConstructor
 @Service
@@ -39,8 +40,8 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     @Transactional(readOnly = true)
-    public Flux<Order> findAll() {
-        return orderRepository.findAll()
+    public Flux<Order> findAllByUserId(Long id) {
+        return orderRepository.findAllByUserId(id)
                 .collectList()
                 .flatMap(this::enrichOrders)
                 .flatMapMany(Flux::fromIterable);
@@ -66,9 +67,10 @@ public class OrderServiceImpl implements OrderService {
     @Override
     @Transactional
     public Mono<Order> placeOrder(Cart cart) {
+        Objects.requireNonNull(cart.getUserId(), "В корзине не указан ID Пользователя");
         Order order = orderFactory.createFromCart(cart);
 
-        return paymentService.processPayment(order.getTotalAmount())
+        return paymentService.processPayment(cart.getUserId(), order.getTotalAmount())
                 .then(orderRepository.save(order))
                 .doOnNext(savedOrder -> savedOrder.getItems()
                         .forEach(item -> item.setOrderId(savedOrder.getId())))

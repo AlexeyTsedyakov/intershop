@@ -7,11 +7,14 @@ package org.intershop.payment.api;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Generated;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import org.intershop.payment.model.BaseResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -19,10 +22,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
-@Generated(value = "org.openapitools.codegen.languages.SpringCodegen", date = "2026-04-06T17:16:22.022873700+03:00[Europe/Moscow]", comments = "Generator version: 7.21.0")
+@Generated(value = "org.openapitools.codegen.languages.SpringCodegen", date = "2026-04-25T15:09:43.923979600+03:00[Europe/Moscow]", comments = "Generator version: 7.21.0")
 @Validated
 @Tag(name = "balance", description = "the balance API")
 public interface BalanceApi {
@@ -31,6 +35,7 @@ public interface BalanceApi {
     /**
      * GET /balance : Получение баланса на счете
      *
+     * @param userId Идентификатор пользователя (required)
      * @return Ответ с балансом счета (status code 200)
      *         or Стандартный ответ (status code 500)
      */
@@ -53,6 +58,7 @@ public interface BalanceApi {
         produces = { "application/json" }
     )
     default Mono<ResponseEntity<Long>> balanceGet(
+        @NotNull @Parameter(name = "userId", description = "Идентификатор пользователя", required = true, in = ParameterIn.QUERY) @Valid @RequestParam(value = "userId", required = true) Long userId,
         @Parameter(hidden = true) final ServerWebExchange exchange
     ) {
         Mono<Void> result = Mono.empty();
@@ -60,7 +66,7 @@ public interface BalanceApi {
         exchange.getResponse().setStatusCode(HttpStatus.NOT_IMPLEMENTED);
         for (MediaType mediaType : exchange.getRequest().getHeaders().getAccept()) {
             if (mediaType.isCompatibleWith(MediaType.valueOf("application/json"))) {
-                String exampleString = "{ \"description\" : \"description\", \"ok\" : true }";
+                String exampleString = "{ \"ok\" : true, \"message\" : \"message\" }";
                 result = ApiUtil.getExampleResponse(exchange, MediaType.valueOf("application/json"), exampleString);
                 break;
             }

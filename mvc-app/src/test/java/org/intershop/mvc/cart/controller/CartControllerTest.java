@@ -5,6 +5,7 @@ import org.intershop.mvc.cart.service.CartService;
 import org.intershop.mvc.cart.service.CartSessionService;
 import org.intershop.mvc.payment.model.BalanceResult;
 import org.intershop.mvc.payment.service.BalanceService;
+import org.intershop.mvc.shared.util.AuthUtil;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.security.oauth2.client.autoconfigure.reactive.ReactiveOAuth2ClientAutoConfiguration;
@@ -36,15 +37,19 @@ public class CartControllerTest {
     private CartSessionService cartSessionService;
     @MockitoBean
     private BalanceService balanceService;
+    @MockitoBean
+    private AuthUtil authUtil;
 
     @Test
     void showCart_shouldReturnView() {
+        long userId = 1;
         long totalAmount = 155L;
         long balance = 600L;
         when(cartSessionService.getCart(any())).thenReturn(cart);
         when(cartService.fetchItems(any(Cart.class))).thenReturn(Mono.empty());
         when(cartService.getTotalAmount(any(Cart.class))).thenReturn(Mono.just(totalAmount));
-        when(balanceService.getBalance()).thenReturn(Mono.just(new BalanceResult(balance, null)));
+        when(balanceService.getBalance(anyLong())).thenReturn(Mono.just(new BalanceResult(balance, null)));
+        when(authUtil.getUserId(any())).thenReturn(userId);
 
         webTestClient.get().uri("/cart")
                 .exchange()
@@ -52,7 +57,7 @@ public class CartControllerTest {
 
         verify(cartService, times(1)).fetchItems(any(Cart.class));
         verify(cartService, times(1)).getTotalAmount(any(Cart.class));
-        verify(balanceService, times(1)).getBalance();
+        verify(balanceService, times(1)).getBalance(userId);
     }
 
     @Test

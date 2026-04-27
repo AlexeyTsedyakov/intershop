@@ -14,6 +14,8 @@ paths:
       tags:
         - balance
       summary: Получение баланса на счете
+      parameters:
+        - $ref: '#/components/parameters/userId'
       responses:
         "200":
           description: Успешный ответ
@@ -28,11 +30,7 @@ paths:
         - payment
       summary: Проведение оплаты (списание с баланса)
       requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/paymentRequest'
+        $ref: '#/components/requestBodies/paymentRequest'
       responses:
         "200":
           description: Успешный ответ
@@ -47,17 +45,57 @@ paths:
 components:
   schemas:
     paymentRequest:
-      type: integer
-      format: int64
+      type: object
+      required:
+        - userId
+        - amount
+      properties:
+        userId:
+          type: integer
+          format: int64
+          description: Идентификатор пользователя
+        amount:
+          type: integer
+          format: int64
+          description: Сумма платежа
+
     baseResponse:
       type: object
       properties:
         ok:
           type: boolean
-        description:
+          description: Флаг успеха операции
+        message:
           type: string
+          description: Описание результата
+
+  parameters:
+    userId:
+      name: userId
+      in: query
+      required: true
+      description: Идентификатор пользователя
+      schema:
+        type: integer
+        format: int64
+
+  requestBodies:
+    paymentRequest:
+      description: Запрос на проведение оплаты
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/paymentRequest'
 
   responses:
+    baseResponse:
+      description: Стандартный ответ
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/baseResponse'
+
     balanceResponse:
       description: Ответ с балансом счета
       content:
@@ -65,9 +103,3 @@ components:
           schema:
             type: integer
             format: int64
-    baseResponse:
-      description: Стандартный ответ
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/baseResponse'

@@ -16,7 +16,8 @@ public class BalanceServiceIntegrationTest {
 
     @Test
     void getBalance_shouldReturnNonEmpty() {
-        StepVerifier.create(balanceService.getBalance())
+        long userId = 1;
+        StepVerifier.create(balanceService.getBalance(userId))
                 .assertNext(balanceResult ->
                         assertThat(balanceResult.value()).isNotNull())
                 .verifyComplete();

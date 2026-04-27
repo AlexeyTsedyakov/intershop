@@ -47,13 +47,15 @@ public class OrderServiceIntegrationTest {
 
     @Test
     void placeOrder_shouldCreateOrder() {
+        long userId = 1;
         Cart cart = new Cart();
+        cart.setUserId(userId);
         cart.increaseQuantity(item1.getId());
         cart.increaseQuantity(item1.getId()); // 2 * item1
         cart.increaseQuantity(item2.getId()); // 1 * item2
 
         StepVerifier.create(cartService.fetchItems(cart))
-                        .verifyComplete();
+                .verifyComplete();
         long expectedTotal = cart.calculateTotalAmount();
         int expectedSize = cart.getItems().size();
 
@@ -67,12 +69,13 @@ public class OrderServiceIntegrationTest {
                 })
                 .verifyComplete();
 
-        verify(paymentService, times(1)).processPayment(expectedTotal);
+        verify(paymentService, times(1)).processPayment(userId, expectedTotal);
     }
 
     @Test
     void findById_shouldReturnOrder() {
         Cart cart = new Cart();
+        cart.setUserId(1L);
         cart.increaseQuantity(item1.getId());
 
         StepVerifier.create(cartService.fetchItems(cart)
@@ -96,23 +99,27 @@ public class OrderServiceIntegrationTest {
     }
 
     @Test
-    void findAll_shouldReturnList() {
+    void findAllByUserId_shouldReturnList() {
+        long userId = 1;
+
         Cart cart1 = new Cart();
+        cart1.setUserId(userId);
         cart1.increaseQuantity(item1.getId());
 
         Cart cart2 = new Cart();
+        cart2.setUserId(userId);
         cart2.increaseQuantity(item2.getId());
 
         StepVerifier.create(cartService.fetchItems(cart1)
                         .then(orderService.placeOrder(cart1))
                         .zipWith(cartService.fetchItems(cart2)
                                 .then(orderService.placeOrder(cart2)))
-                        .flatMapMany(tuple -> orderService.findAll()
+                        .flatMapMany(tuple -> orderService.findAllByUserId(userId)
                                 .collectList()
                                 .map(orders -> {
                                     List<Long> orderIds = orders.stream().map(Order::getId).toList();
                                     return orderIds.contains(tuple.getT1().getId()) &&
-                                           orderIds.contains(tuple.getT2().getId());
+                                            orderIds.contains(tuple.getT2().getId());
                                 })))
                 .expectNext(true)
                 .verifyComplete();
@@ -120,10 +127,14 @@ public class OrderServiceIntegrationTest {
 
     @Test
     void getOrdersAmount_shouldCalculateCorrectly() {
+        long userId = 1;
+
         Cart cart1 = new Cart();
+        cart1.setUserId(userId);
         cart1.increaseQuantity(item1.getId());
 
         Cart cart2 = new Cart();
+        cart2.setUserId(userId);
         cart2.increaseQuantity(item2.getId());
 
         StepVerifier.create(
