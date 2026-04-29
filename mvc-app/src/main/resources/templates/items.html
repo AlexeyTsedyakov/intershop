@@ -11,9 +11,9 @@
     <nav class="main-navigation">
         <ul>
             <li><a th:href="@{/items}">Все товары</a></li>
-            <li><a th:href="@{/cart}">Корзина</a></li>
-            <li><a th:href="@{/orders}">Заказы</a></li>
-            <li><a th:href="@{/items/new}">Добавить товар</a></li>
+            <li th:if="${isAuthenticated}"><a th:href="@{/cart}">Корзина</a></li>
+            <li th:if="${isAuthenticated}"><a th:href="@{/orders}">Заказы</a></li>
+            <li th:if="${isAuthenticated}"><a th:href="@{/items/new}">Добавить товар</a></li>
             <li th:if="${!isAuthenticated}"><a th:href="@{/login}">Вход</a></li>
             <li th:if="${!isAuthenticated}"><a th:href="@{/users/registration}">Регистрация</a></li>
             <li th:if="${isAuthenticated}"><a th:href="@{/logout}">Выход</a></li>
@@ -64,7 +64,7 @@
             </a>
             <p th:text="${item.description}">Описание</p>
             <p class="price" th:text="'Цена: ' + ${item.price}">Цена</p>
-            <div class="cart-actions">
+            <div th:if="${isAuthenticated}" class="cart-actions">
                 <form method="post" th:action="@{/cart/increase/{id} (id=${item.id}, redirectUrl=${currentUrl})}">
                     <button type="submit" class="cart-button">+</button>
                 </form>

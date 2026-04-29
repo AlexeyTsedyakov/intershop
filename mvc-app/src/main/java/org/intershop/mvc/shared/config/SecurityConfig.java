@@ -40,10 +40,10 @@ public class SecurityConfig {
         return http
                 .authenticationManager(authenticationManager)
                 .authorizeExchange(exchanges -> exchanges
+                        .pathMatchers("/users/registration").permitAll()
                         .pathMatchers(HttpMethod.GET, "/items/new").authenticated()
                         .pathMatchers(HttpMethod.POST, "/items").authenticated()
                         .pathMatchers("/", "/items/**", "/img/**", "/css/**").permitAll()
-                        .pathMatchers("/users/registration").permitAll()
                         .anyExchange().authenticated()
                 )
                 .csrf(csrf -> csrf.csrfTokenRequestHandler(csrfHandler))
