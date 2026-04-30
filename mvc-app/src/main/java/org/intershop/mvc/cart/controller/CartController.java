@@ -42,7 +42,7 @@ public class CartController {
     }
 
     @PostMapping("/increase/{id}")
-    public Mono<Rendering> add(@PathVariable Long id, @RequestParam String redirectUrl, WebSession session) {
+    public Mono<Rendering> increase(@PathVariable Long id, @RequestParam String redirectUrl, WebSession session) {
         Cart cart = cartSessionService.getCart(session);
 
         return Mono.fromRunnable(() -> cart.increaseQuantity(id))
