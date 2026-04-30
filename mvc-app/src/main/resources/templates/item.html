@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Карточка товара</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/holiday.css@0.11.5" />
     <link rel="stylesheet" th:href="@{/css/style.css}">
 </head>
 
@@ -30,15 +31,15 @@
         <p class="price" th:text="'Цена: ' + ${item.price}">Цена</p>
         <div th:if="${isAuthenticated}" class="cart-actions">
             <form method="post" th:action="@{/cart/increase/{id} (id=${item.id}, redirectUrl=${currentUrl})}">
-                <button type="submit" class="cart-button">+</button>
+                <button type="submit" class="cart-button">➕</button>
             </form>
             <span th:text="${cart.getQuantity(item.id)}"></span>
             <form method="post" th:action="@{/cart/decrease/{id} (id=${item.id}, redirectUrl=${currentUrl})}">
-                <button type="submit" class="cart-button">-</button>
+                <button type="submit" class="cart-button">➖</button>
             </form>
             <form th:if="${cart.getQuantity(item.id) > 0}"
                   method="post" th:action="@{/cart/remove/{id} (id=${item.id}, redirectUrl=${currentUrl})}">
-                <button type="submit">Удалить из корзины</button>
+                <button type="submit" class="cart-button">❌</button>
             </form>
         </div>
     </article>

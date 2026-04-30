@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Корзина</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/holiday.css@0.11.5" />
     <link rel="stylesheet" th:href="@{/css/style.css}">
 </head>
 
@@ -19,10 +20,11 @@
             <li th:if="${isAuthenticated}"><a th:href="@{/logout}">Выход</a></li>
         </ul>
     </nav>
-    <h1>Корзина</h1>
 </header>
 
 <main>
+    <h1>Корзина</h1>
+
     <section class="items-container">
         <article class="item-card" th:each="cartItem : ${cart.getItems()}">
             <img th:src="@{/img/{filename}(filename=${cartItem.item.image})}" th:alt="${cartItem.item.name}"
@@ -33,15 +35,15 @@
             <p class="price" th:text="'Цена: ' + ${cartItem.price}">Цена</p>
             <div th:if="${isAuthenticated}" class="cart-actions">
                 <form method="post" th:action="@{/cart/increase/{id} (id=${cartItem.itemId}, redirectUrl=${currentUrl})}">
-                    <button type="submit" class="cart-button">+</button>
+                    <button type="submit" class="cart-button">➕</button>
                 </form>
                 <span th:text="${cart.getQuantity(cartItem.itemId)}"></span>
                 <form method="post" th:action="@{/cart/decrease/{id} (id=${cartItem.itemId}, redirectUrl=${currentUrl})}">
-                    <button type="submit" class="cart-button">-</button>
+                    <button type="submit" class="cart-button">➖</button>
                 </form>
                 <form th:if="${cart.getQuantity(cartItem.itemId) > 0}"
                       method="post" th:action="@{/cart/remove/{id} (id=${cartItem.itemId}, redirectUrl=${currentUrl})}">
-                    <button type="submit">Удалить из корзины</button>
+                    <button type="submit" class="cart-button">❌</button>
                 </form>
             </div>
         </article>

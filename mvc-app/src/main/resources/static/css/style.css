@@ -1,8 +1,17 @@
+label {
+    margin-top: 0;
+}
+
 .controls-form {
     display: flex;
-    flex-direction: column;
-    gap: 5px;
-    align-items: flex-start;
+    gap: 16px;
+    align-items: end;
+    margin-bottom: 15px;
+}
+
+.control {
+    height: 2.25rem;
+    margin-top: 0.3rem;
 }
 
 .items-container {
@@ -19,7 +28,12 @@
 .pagination-selector, .page-size-selector {
     display: flex;
     gap: 5px;
-    margin-top: 10px;
+    align-items: center;
+}
+
+.pagination-selector label {
+    width: auto;
+    margin-top: 0;
 }
 
 .pagination-refs, .page-sizes-buttons {
@@ -45,16 +59,16 @@
 
 .cart-actions {
     display: flex;
-    gap: 5px;
     align-items: center;
+    gap: 8px;
 }
 
 .cart-button {
-    width: 20px;
-}
-
-.pagination-selector {
-    margin-top: 20px;
+    width: 28px;
+    height: 28px;
+    font-size: 12px;
+    padding: 0;
+    cursor: pointer;
 }
 
 .main-navigation ul {

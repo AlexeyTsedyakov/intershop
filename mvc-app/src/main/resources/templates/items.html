@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Витрина товаров</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/holiday.css@0.11.5" />
     <link rel="stylesheet" th:href="@{/css/style.css}">
 </head>
 
@@ -29,12 +30,12 @@
 
         <div>
             <label for="search">Название содержит:</label>
-            <input id="search" name="search" type="search" th:value="${search}" placeholder="Например: кофе">
+            <input class="control" id="search" name="search" type="search" th:value="${search}" placeholder="Например: штаны">
         </div>
 
         <div>
             <label for="sort">Сортировать:</label>
-            <select id="sort" name="sort">
+            <select class="control" id="sort" name="sort">
                 <option value="" th:selected="${sort == null || sort == ''}">По умолчанию</option>
                 <option value="price,asc" th:selected="${sort == 'price,asc'}">Цена ↑</option>
                 <option value="price,desc" th:selected="${sort == 'price,desc'}">Цена ↓</option>
@@ -45,7 +46,7 @@
 
         <div>
             <label for="size">Показывать:</label>
-            <select id="size" name="size">
+            <select class="control" id="size" name="size">
                 <option value="3" th:selected="${size == 3}">3</option>
                 <option value="10" th:selected="${size == 10}">10</option>
                 <option value="20" th:selected="${size == 20}">20</option>
@@ -53,7 +54,7 @@
             </select>
         </div>
 
-        <button type="submit" class="submit-button">Применить</button>
+        <button type="submit">Применить</button>
     </form>
 
     <section class="items-container">
@@ -66,17 +67,17 @@
             <p class="price" th:text="'Цена: ' + ${item.price}">Цена</p>
             <div th:if="${isAuthenticated}" class="cart-actions">
                 <form method="post" th:action="@{/cart/increase/{id} (id=${item.id}, redirectUrl=${currentUrl})}">
-                    <button type="submit" class="cart-button">+</button>
+                    <button type="submit" class="cart-button">➕</button>
                 </form>
                 <span th:text="${cart.getQuantity(item.id)}"></span>
                 <form method="post" th:action="@{/cart/decrease/{id} (id=${item.id}, redirectUrl=${currentUrl})}">
-                    <button type="submit" class="cart-button">-</button>
+                    <button type="submit" class="cart-button">➖</button>
                 </form>
             </div>
         </article>
     </section>
 
-    <div class="pagination-selector">
+    <div th:if="${totalPages > 0}" class="pagination-selector">
         <label>Страница: </label>
         <ul class="pagination-refs">
             <li th:if="${currentPage > 0}">
