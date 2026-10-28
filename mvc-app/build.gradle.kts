@@ -7,8 +7,6 @@ plugins {
 
 description = "mvc-app"
 
-val mockitoAgent by configurations.creating
-
 configurations {
     compileOnly {
         extendsFrom(configurations.annotationProcessor.get())
@@ -46,8 +44,6 @@ dependencies {
     testImplementation("com.github.codemonstur:embedded-redis:1.4.3")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
     testImplementation("org.springframework.security:spring-security-test")
-
-    mockitoAgent("org.mockito:mockito-core") { isTransitive = false }
 }
 
 openApiGenerate {
@@ -70,13 +66,6 @@ openApiGenerate {
     )
 }
 
-tasks.withType<Test> {
-    useJUnitPlatform()
-    doFirst {
-        jvmArgs("-javaagent:${mockitoAgent.singleFile.absolutePath}")
-    }
-}
-
 // Unit tests
 tasks.named<Test>("test") {
     filter {
@@ -95,8 +84,4 @@ val integrationTest by tasks.registering(Test::class) {
     filter {
         includeTestsMatching("*IntegrationTest")
     }
-}
-
-tasks.jar {
-    enabled = false
 }
