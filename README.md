@@ -6,7 +6,9 @@
 Проект состоит из двух модулей:
 
 * `mvc-app` - Витрина магазина
-* `payment-service` - Мок-сервис, который эмулирует оплату через RESTful-интерфейс. Баланс пользователя задается настройкой `config.init-balance` в [application.properties](payment-service/src/main/resources/application.properties) и сбрасывается до начального значения после рестарта
+* `payment-service` - Мок-сервис, который эмулирует оплату через RESTful-интерфейс. Баланс пользователя задается
+  настройкой `config.init-balance` в [application.properties](payment-service/src/main/resources/application.properties)
+  и сбрасывается до начального значения после рестарта
 
 В качестве инфраструктуры используются следующие сервисы:
 
@@ -37,28 +39,21 @@ Keycloak
 ## Как запустить с помощью Docker
 
 1. [Собрать приложение](#как-собирать)
-2. [Настроить Keycloak](#настройка-keycloak)
-3. `docker-compose up`
-4. Перейти на `http://localhost:8080`
+2. `docker-compose up`
+3. Перейти на `http://localhost:8080`
 
 ## Как запустить локально
 
 1. [Собрать проект](#как-собирать)
-2. Запустить модули проекта
-3. Перейти на `http://localhost:8080`
+2. Установить Redis
+3. Установить Keycloak и импортировать realm из файла [realm-export.json](keycloak/realm-export.json)
+4. Параметры подключений установить в `.env` файле
+5. Запустить модули приложения:
 
-### payment-service
+* `./gradlew :payment-service:bootRun`
+* `./gradlew :mvc-app:bootRun`
 
-1.`./gradlew :payment-service:bootRun`
-
-### mvc-app
-
-Настройки подключений берем из .env файла
-
-1. Создать базу `intershop`
-2. Подготовить Redis
-3. [Настроить Keycloak](#настройка-keycloak)
-4. `./gradlew :mvc-app:bootRun`
+6. Перейти на `http://localhost:8080`
 
 ## Как тестировать
 
@@ -69,33 +64,3 @@ Keycloak
 Интеграционные тесты:
 
 1. `./gradlew integrationTest`
-
-## Настройка Keycloak
-
-В фигурных скобках - {`env_name`:`default_value`}
-
-1. Запускаем изолировано Keycloak: `docker compose up keycloak`
-2. Переходим на `http://localhost:{KC_HTTP_PORT:8088}/admin`
-3. Заходим под логином и паролем:
-    - `{KC_BOOTSTRAP_ADMIN_USERNAME:admin}`
-    - `{KC_BOOTSTRAP_ADMIN_PASSWORD:admin}`
-4. Создаём клиента `mvc-app`:
-    1. Переходим на вкладку **Clients**.
-    2. Нажимаем **Create client**.
-    3. Указываем:
-        - **Client ID**: `mvc-app`
-        - **Name**: `mvc-app`
-
-       Остальное не меняем. Нажимаем **Next**.
-    4. Включаем:
-        - **Client authentication**
-        - **Service account roles**
-
-       Остальное выключаем. Нажимаем **Next**.
-    5. Ничего не меняем. Нажимаем **Save**.
-5. Получаем секрет клиента
-    1. Переходим на вкладку **Clients**
-    2. Выбираем клиента **mvc-app**
-    3. Переходим на вкладку **Credentials**
-    4. Копируем поле **Client Secret** и сохраняем значение в поле `KC_CLIENT_SECRET` .env файла. Либо
-       сохраняем в одноименную переменную окружения
